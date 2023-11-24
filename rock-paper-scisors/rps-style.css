@@ -1,0 +1,41 @@
+*, *::after, *::before {
+    box-sizing: border-box;
+    padding: 0;
+    border: 0;
+}
+
+html {
+    font-family: open-sans;
+}
+
+.main-wrap {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 100px;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.output {
+    height: 4em;
+    width: 400px;
+    border: 1px solid black;
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.input {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    gap: 15px;
+}
+button {
+    border: none;
+    border-radius: 10px;
+    width: 100px;
+    height: 2em;
+}
