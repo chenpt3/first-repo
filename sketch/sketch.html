@@ -9,9 +9,29 @@
     </head>
     <body>
         <main>
-            <h1 class="header">Sketch!</h1>
-            <div class="sketch-container"></div>
-            <button class="reset">Reset</button>
+            <div class="side-control">
+                <div class="tools">
+                    <p class="color-text">Choose color<input id="color" value="#0a0a0a" type="color" class="color"></p>
+                    <button class="pen">Pen</button>
+                    <button class="eraser">Eraser</button>
+                    <button class="random-color">Color madness!</button>
+                </div>
+                <div class="hues">
+                    <button class="darkner">Darkner</button>
+                    <p class="darkner-text">Choose darkner length <input id="darkner" type="range" class="darkner-input" value="darkner" min="1" max="20"></p>
+                    <button class="brightner">Brightner</button>
+                    <p class="brightner-text">Choose brightner length <input id="brightner" type="range" class="brightner-input" value="brightner" min="1" max="20"></p>
+                </div>
+            </div>
+            <div class="game">
+                <h1 class="header">Sketch!</h1>
+                <div class="sketch-container"></div>
+            </div>
+            <div class="right-div">
+                <p class="grid-size-text">Choose grid size <input class="grid-size" type="range" id="grid-size" value="grid-size" min="1" max="100"></p>
+                <button class="grid-lines">Toggle grid</button><br>
+                <button class="reset">Reset</button>
+            </div>
         </main>
     </body>
 </html>

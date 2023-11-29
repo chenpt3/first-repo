@@ -7,9 +7,61 @@
 html {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: rgb(57, 57, 57);
+    color: #F3F3F3;
+}
+
+p {
+    display: flex;
+    flex-direction: column;
+    font-size: 1.8em;
+}
+
+button {
+    background-color: #F3F3F3;
+    color: rgb(57,57,57);
+    font-size: 1.8em;
+    width: 250px;
+    border: none;
+    border-radius: 10px;
+}
+
+button:hover {
+    opacity: 0.7;
 }
 
 main {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    align-items: center;
+    padding: 5px;
+}
+
+.side-control {
+    display: flex;
+    flex-direction: column;
+    gap: 50px;
+    justify-content: center;
+    align-items: center;
+}
+
+.tools {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    justify-content: center;
+    align-items: center;
+}
+
+.hues {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    justify-content: center;
+    align-items: center;
+}
+
+.game {
     display: flex;
     flex-direction: column;
     gap: 20px;
@@ -34,21 +86,32 @@ main {
 }
 
 .cell {
-    border: 1px solid black;
-    border-collapse: collapse;
     flex-shrink: 1;
     background-color: rgb(200, 200, 200);
 }
 
-.reset {
-    border: none;
-    border-radius: 7px;
-    background-color: #F3F3F3;
-    color: rgb(57, 57, 57);
-    width: 20%;
-    font-size: 2em;
+.border {
+    border-collapse: collapse;
+    border: 0.3px rgb(83, 83, 83) solid;
 }
 
-.reset:hover {
-    opacity: 0.7;
+.right-div {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    justify-content: center;
+    align-items: center;
+}
+
+.color-text {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: baseline;
+}
+
+.color {
+    width: 90px;
+    height: 40px;
+    padding: 3px;
 }
