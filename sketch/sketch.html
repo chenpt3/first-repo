@@ -10,18 +10,23 @@
     <body>
         <main>
             <div class="side-control">
-                <div class="tools">
-                    <p class="color-text">Choose color<input id="color" value="#0a0a0a" type="color" class="color"></p>
-                    <button class="pen">Pen</button>
-                    <button class="eraser">Eraser</button>
-                    <button class="random-color">Color madness!</button>
+                <div class="colors-div">
+                    <div class="color-div">
+                        <div class="color-pick"><input id="color" value="#0a0a0a" type="color" class="color"></div>
+                        <p class="color-text">Pen color</p>
+                    </div>
+                    <div class="back-div"> 
+                        <div class="color-pick"><input id="background-color" value="#f3f3f3" type="color" class="color" onchange="backgroundChange()"></div>
+                        <p class="color-text">Background</p>
+                    </div>
                 </div>
-                <div class="hues">
-                    <button class="darkner">Darkner</button>
-                    <p class="darkner-text">Choose darkner length <input id="darkner" type="range" class="darkner-input" value="darkner" min="1" max="20"></p>
-                    <button class="brightner">Brightner</button>
-                    <p class="brightner-text">Choose brightner length <input id="brightner" type="range" class="brightner-input" value="brightner" min="1" max="20"></p>
-                </div>
+                <button class="pen">Pen</button>
+                <button class="eraser">Eraser</button>
+                <button class="fill">Fill</button>
+                <button class="get-color">Get color</button>
+                <button class="darkner">Darkner</button>
+                <button class="brightner">Brightner</button>
+                <button class="random-color">Color madness!</button>
             </div>
             <div class="game">
                 <h1 class="header">Sketch!</h1>
