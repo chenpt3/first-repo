@@ -4,150 +4,53 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Calculator</title>
-        <script defer src="calculator-scripts.js"></script>
         <link rel="stylesheet" href="calculator-style.css">
+        <script defer src="calculator-scripts.js"></script>
     </head>
     <body>
         <div class="main-wrap">
-            <div class="output"></div>
-            <div class="input"><input type="text"></div>
-            <div class="controls">
-                <div class="layout-toggle">
-                    <p class="main-layout-control">main</p>
-                    <p class="abc-layout-control">abc</p>
-                    <p class="func-layout-control">func</p>
-                </div>
-                <div class="deg-toggle">
-                    <p class="rad">RAD</p>
-                    <p class="deg">DEG</p>
-                </div>
-                <div class="general-controls">
-                    <p class="undo">↶</p>
-                    <p class="redo">↷</p>
-                    <p class="clear-all">AC</p>
-                    <p class="settings">&#128295</p>
-                </div>
+            <div class="display">
+                <div class="log"></div>
+                <div class="upper-display">0</div>
+                <div class="output">0</div>
             </div>
-            <div class="keys">
-                <div class="main-layout">
-                    <div class="math-funcs">
-                        <button class="to-power-of-two">a<sup>2</sup></button>
-                        <button class="to-the-power-of">a<sup>b</sup></button>
-                        <button class="definitive-value">|a|</button>
-                        <button class="sqrt">√</button>
-                        <button class="sqrt-of"><sup>n</sup>√</button>
-                        <button class="pie">π</button>
-                        <button class="sin">sin</button>
-                        <button class="cos">cos</button>
-                        <button class="tan">tan</button>
-                        <button class="left-parentheses">(</button>
-                        <button class="right-parentheses">)</button>
-                        <button class="comma">,</button>
-                    </div>
-                    <div class="num-and-operators">
-                        <button class="number">7</button>
-                        <button class="number">8</button>
-                        <button class="number">9</button>
-                        <button class="divideBy">÷</button>
-                        <button class="number">4</button>
-                        <button class="number">5</button>
-                        <button class="number">6</button>
-                        <button class="multiply-by">×</button>
-                        <button class="number">1</button>
-                        <button class="number">2</button>
-                        <button class="number">3</button>
-                        <button class="minus">-</button>
-                        <button class="number">0</button>
-                        <button class="number">.</button>
-                        <button class="answer">ans</button>
-                        <button class="plus">+</button>
-                    </div>
-                    <div class="main-func-controls">
-                        <button class="modulos">%</button>
-                        <button class="sToD">S⇔D</button>
-                        <button class="backward">←</button>
-                        <button class="forward">→</button>
-                        <button class="backspace">⌫</button>
-                        <button class="enter">⏎</button>
-                    </div>
+            <div class="controls">
+                <div class="row">
+                    <button class="clear">AC</button>
+                    <button class="delete">DEL</button>
+                    <button class="precent">%</button>
+                    <button class="negate">-/+</button>
                 </div>
-                <div class="abc-layout">
-                    <div class="row-one">
-                        <button class="keyboard-char">q</button>
-                        <button class="keyboard-char">w</button>
-                        <button class="keyboard-char">e</button>
-                        <button class="keyboard-char">r</button>
-                        <button class="keyboard-char">t</button>
-                        <button class="keyboard-char">y</button>
-                        <button class="keyboard-char">u</button>
-                        <button class="keyboard-char">i</button>
-                        <button class="keyboard-char">o</button>
-                        <button class="keyboard-char">p</button>
-                    </div>
-                    <div class="row-two">
-                        <button class="keyboard-char">a</button>
-                        <button class="keyboard-char">s</button>
-                        <button class="keyboard-char">d</button>
-                        <button class="keyboard-char">f</button>
-                        <button class="keyboard-char">g</button>
-                        <button class="keyboard-char">h</button>
-                        <button class="keyboard-char">j</button>
-                        <button class="keyboard-char">k</button>
-                        <button class="keyboard-char">l</button>
-                    </div>
-                    <div class="row-three">
-                        <button class="keyboard-func">=</button>
-                        <button class="keyboard-char">z</button>
-                        <button class="keyboard-char">x</button>
-                        <button class="keyboard-char">c</button>
-                        <button class="keyboard-char">v</button>
-                        <button class="keyboard-char">b</button>
-                        <button class="keyboard-char">n</button>
-                        <button class="keyboard-char">m</button>
-                        <button class="keyboard-char">,</button>
-                        <button class="keyboard-func">⌫</button>
-                    </div>
-                    <div class="row-four">
-                        <button class="keyboard-func big">↑</button>
-                        <button class="keyboard-char">(</button>
-                        <button class="keyboard-char">)</button>
-                        <button class="keyboard-char">[</button>
-                        <button class="keyboard-char">]</button>
-                        <button class="keyboard-char">!</button>
-                        <button class="keyboard-char">'</button>
-                        <button class="keyboard-char">π</button>
-                        <button class="keyboard-func big enter">⏎</button>
-                    </div>
+                <div class="row">
+
+                    <button class="number">(</button>
+                    <button class="number">)</button>
+                    <button class="power">^</button>
+                    <button class="sqrt">√</button>
                 </div>
-                <div class="func-layout">
-                    <div class="left-container">
-                        <button class="func">sin</button>
-                        <button class="func">cos</button>
-                        <button class="func">tan</button>
-                        <button class="func">sin<sup>-1</sup></button>
-                        <button class="func">cos<sup>-1</sup></button>
-                        <button class="func">tan<sup>-1</sup></button>
-                        <button class="func">mean</button>
-                        <button class="func">stdev</button>
-                        <button class="func">stdevp</button>
-                        <button class="func">nPr</button>
-                        <button class="func">nCr</button>
-                        <button class="func">!</button>
-                    </div>
-                    <div class="right-container">
-                        <button class="func">a<sup>b</sup></button>
-                        <button class="func">√</button>
-                        <button class="func"><sup>n</sup>√</button>
-                        <button class="func">ℯ<sup>×</sup></button>
-                        <button class="func">abs</button>
-                        <button class="func">round</button>
-                        <button class="func">ln</button>
-                        <button class="func">log</button>
-                        <button class="func">⌫</button>
-                        <button class="func">ℯ</button>
-                        <button class="func">π</button>
-                        <button class="func">⏎</button>
-                    </div>
+                <div class="row">
+                    <button class="number">7</button>
+                    <button class="number">8</button>
+                    <button class="number">9</button>
+                    <button class="divide">÷</button>
+                </div>
+                <div class="row">
+                    <button class="number">4</button>
+                    <button class="number">5</button>
+                    <button class="number">6</button>
+                    <button class="times">×</button>
+                </div>
+                <div class="row">
+                    <button class="number">1</button>
+                    <button class="number">2</button>
+                    <button class="number">3</button>
+                    <button class="minus">-</button>
+                </div>
+                <div class="row">
+                    <button class="dot">.</button>
+                    <button class="number">0</button>
+                    <button class="equals">=</button>
+                    <button class="plus">+</button>
                 </div>
             </div>
         </div>
