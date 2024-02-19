@@ -1,0 +1,71 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-image: linear-gradient(288deg, rgb(43, 43, 43), rgb(164, 159, 159));
+}
+
+.main-wrap {
+  width: fit-content;
+  margin: 200px auto;
+  border: 1px solid black;
+  padding: 5px;
+  background-image: linear-gradient(160deg, rgb(45, 45, 45), black);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.display {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid black;
+  padding: 0 3px;
+  margin-bottom: 5px;
+  height: 40%;
+}
+
+.log {
+  height: 10rem;
+  font-size: 2em;
+  color: #f3f3f3;
+  border-bottom: solid 1px black;
+}
+
+.upper-display {
+  margin-bottom: -5px;
+  font-size: 1.5em;
+  color: #f3f3f3;
+  min-height: 1.6em;
+}
+
+.output {
+  margin-top: -10px;
+  margin-bottom: -10px;
+  font-size: 60px;
+  align-self: flex-end;
+  color: #f3f3f3;
+  min-height: 70px;
+}
+
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  height: 40%;
+}
+
+button {
+  font-size: 1.8em;
+  padding: 2px;
+  width: 80px;
+  border: none;
+  background-image: linear-gradient(157deg, rgb(10, 141, 235), rgb(112, 188, 250));
+}
+
+button:hover {
+  opacity: 0.8;
+}

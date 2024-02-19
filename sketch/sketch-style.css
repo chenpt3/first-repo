@@ -1,0 +1,145 @@
+*, *::after, *::before {
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+}
+
+html {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    color: #F3F3F3;
+    background-image: linear-gradient(100deg, #504e4e, rgb(28, 28, 28));
+    background-size: cover;
+}
+
+p {
+    display: flex;
+    flex-direction: column;
+    font-size: 1.8em;
+}
+
+button {
+    background-color: #1fbded;
+    color: #f3f3f3;
+    font-size: 1.8em;
+    width: 250px;
+    border: 1px solid #f3f3f3;
+    border-radius: 10px;
+    font-weight: bold;
+    height: 1.8em;
+}
+
+button:hover {
+    opacity: 0.7;
+}
+
+main {
+    display: flex;
+    gap: 30px;
+    justify-content: center;
+    align-items: center;
+    padding: 5px;
+    height: 100vh;
+}
+
+.side-control {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    justify-content: center;
+    align-items: center;
+    align-self: flex-end;
+    margin-bottom: 40px;
+}
+
+.colors-div {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 25px;
+}
+
+.color-div {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.back-div {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.game {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    justify-content: center;
+    align-items: center;
+    padding: 5px;
+}
+
+.header {
+    font-size: 6em;
+    color: #F3F3F3;
+    letter-spacing: -5px;
+}
+
+.sketch-container {
+    width: 600px;
+    height: 600px;
+    border: solid #F3F3F3 1px;
+    background-color: rgb(200, 200, 200);
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.cell {
+    flex-shrink: 1;
+    background-color: #F3F3F3;
+}
+
+.border {
+    border-collapse: collapse;
+    border: 0.3px rgb(83, 83, 83) solid;
+}
+
+.right-div {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    justify-content: center;
+    align-items: center;
+}
+
+.color-text {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: baseline;
+    font-size: 1.4em;
+}
+
+.clicked {
+    opacity: 0.4;
+}
+
+.color-pick {
+    width:75px;
+    height:75px;
+    overflow: hidden;
+    border-radius:100%;
+  }
+
+input[type='color'] {
+    width:100%;
+    height:100%;
+    background: #FFFFFF 0% 0% no-repeat padding-box;
+    box-shadow: 0px 3px 6px #0000001A;
+    transform: scale(1.5);
+}

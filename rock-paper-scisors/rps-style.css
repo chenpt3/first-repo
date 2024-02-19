@@ -1,0 +1,155 @@
+*, *::after, *::before {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: #F7f7f7;
+}
+
+header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+    font-size: 74px;
+    color: indianred;
+    letter-spacing: -6px;
+    border-bottom: 2px solid rgb(50, 47, 47);
+    padding: 5px;
+}
+
+main {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.game {
+    border: 1px solid black;
+    border-radius: 3px;
+    min-height: 600px;
+    max-height: max-content;
+    width: 70%;
+    margin: 20px;
+}
+
+.start-screen {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+    justify-content: center;
+    color: #c0c270;
+    background-color: rgb(51, 28, 0);
+    width: 100%;
+    min-height: 600px;
+    max-height: max-content;
+}
+
+.game-header {
+    font-size: 6em;
+    padding-bottom: 40px;
+    letter-spacing: -3px;
+    width: 100%;
+    text-align: center;
+}
+
+.menu-btn {
+    font-size: 2em;
+    padding: 5px;
+    width: 40%;
+    border-radius: 5px;
+    border: none;
+    background-color: rgb(162, 73, 246);
+}
+
+.menu-btn:hover {
+    opacity: 0.7;
+}
+
+.choice-screen {
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+    justify-content: center;
+    color: #c0c270;
+    background-color: rgb(51, 28, 0);
+    width: 100%;
+    min-height: 600px;
+    max-height: max-content;
+}
+
+.choice-btn {
+    font-size: 2em;
+    padding: 5px;
+    width: 40%;
+    border-radius: 5px;
+    border: none;
+}
+
+.choice-btn:hover {
+    opacity: 0.7;
+}
+
+.game-screen {
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+    justify-content: center;
+    color: #c0c270;
+    background-color: rgb(51, 28, 0);
+    width: 100%;
+    min-height: 600px;
+    max-height: max-content;
+}
+
+.continue {
+    font-size: 2em;
+    padding: 5px;
+    width: 40%;
+    border-radius: 5px;
+    border: none;
+}
+
+.continue:hover {
+    opacity: 0.7;
+}
+
+.end-screen {
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+    justify-content: center;
+    color: #c0c270;
+    background-color: rgb(51, 28, 0);
+    width: 100%;
+    min-height: 600px;
+    max-height: max-content;
+}
+
+.restart {
+    font-size: 2em;
+    padding: 5px;
+    width: 40%;
+    border-radius: 5px;
+    border: none;
+}
+
+.restart:hover {
+    opacity: 0.7;
+}
+
+footer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: grey;
+    font-size: 20px;
+    border-top: solid 1px black;
+    padding: 5px;
+}
