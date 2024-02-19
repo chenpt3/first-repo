@@ -8,11 +8,57 @@
     </head>
     <body>
         <div class="main-wrap">
-            <div class="grid-item1 item">1</div>
-            <div class="grid-item2 item">2</div>
-            <div class="grid-item3 item">3</div>
-            <div class="grid-item4 item">4</div>
-            <div class="grid-item5 item">5</div>
+            <div class="header">
+                <h1>Chen's Library</h1>
+            </div>
+            <div class="aside">
+                <div class="dialog-wrap">
+                    <dialog>
+                        <p class="new-book-p">Add a new book:</p>
+                        <form>
+                            <div class="label">
+                                <label for="new-title">Book Title: </label>
+                                <input type="text" name="new-title" class="new-input">
+                            </div>
+                            <div class="label">
+                                <label for="new-author">Book Author: </label>
+                                <input type="text" name="new-author" class="new-input">
+                            </div>
+                            <div class="label">
+                                <label for="new-length">Num. of Pages: </label>
+                                <input type="text" name="new-length" class="new-input">
+                            </div>
+                            <div class="label">
+                                <label for="new-genre">Genre: </label>
+                                <input type="text" name="new-genre" class="new-input">
+                            </div>
+                            <div class="label check">
+                                <label for="new-read">Have you read it? </label>
+                                <input type="checkbox" name="new-read" id="read-check">
+                            </div>
+                        </form>
+                        <button id="add">Add</button>
+                        <button id="cancel">Cancel</button>
+                    </dialog>
+                </div>
+                <button id="add-book">Add a book</button>
+                <div class="stats-wrap">
+                    <p class="stats">Stats:</p>
+                </div>
+            </div>
+            <div class="main">
+                <div class="index-row">
+                    <div class="title">Book Title</div>
+                    <div class="author">Author</div>
+                    <div class="leng">Num. of Pages</div>
+                    <div class="genre">Genre</div>
+                    <div class="read">Read status</div>
+                </div>
+                <div class="books-wrap"></div>
+            </div>
+            <div class="footer">
+                <p class="rigts">All rights whatever</p>
+            </div>
         </div>
         <script defer src="library.js"></script>
     </body>
