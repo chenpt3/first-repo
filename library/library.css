@@ -42,6 +42,7 @@ html {
     grid-column: 2 / 4;
     border: 1px solid black;
     background-color: rgb(224, 138, 87);
+    overflow-y: scroll;
 }
 
 .footer {
@@ -55,11 +56,11 @@ html {
 }
 
 .index-row {
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
+    display: grid;
+    grid-template-columns: repeat(6, minmax(max-content, 1fr));
     padding: 10px;
     border-bottom: 1px solid black;
+    text-align: center;
 }
 
 #add-book {
@@ -154,4 +155,12 @@ form {
 #cancel:hover {
     color: rgb(149, 149, 149);
     background-color: #d9d9d9;
+}
+
+.book {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(max-content, 1fr));
+    padding: 10px;
+    border-bottom: 1px solid black;
+    text-align: center;
 }

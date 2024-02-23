@@ -18,25 +18,26 @@
                         <form>
                             <div class="label">
                                 <label for="new-title">Book Title: </label>
-                                <input type="text" name="new-title" class="new-input">
+                                <input id="new-title" type="text" name="new-title" class="new-input">
                             </div>
                             <div class="label">
                                 <label for="new-author">Book Author: </label>
-                                <input type="text" name="new-author" class="new-input">
+                                <input id="new-author" type="text" name="new-author" class="new-input">
                             </div>
                             <div class="label">
                                 <label for="new-length">Num. of Pages: </label>
-                                <input type="text" name="new-length" class="new-input">
+                                <input id="new-length" type="number" name="new-length" class="new-input">
                             </div>
                             <div class="label">
                                 <label for="new-genre">Genre: </label>
-                                <input type="text" name="new-genre" class="new-input">
+                                <input id="new-genre" type="text" name="new-genre" class="new-input">
                             </div>
                             <div class="label check">
                                 <label for="new-read">Have you read it? </label>
                                 <input type="checkbox" name="new-read" id="read-check">
                             </div>
                         </form>
+                        <div id="error"></div>
                         <button id="add">Add</button>
                         <button id="cancel">Cancel</button>
                     </dialog>
@@ -48,11 +49,12 @@
             </div>
             <div class="main">
                 <div class="index-row">
-                    <div class="title">Book Title</div>
-                    <div class="author">Author</div>
-                    <div class="leng">Num. of Pages</div>
-                    <div class="genre">Genre</div>
-                    <div class="read">Read status</div>
+                    <div id="index-title" class="parameter">Book Title</div>
+                    <div id="index-author" class="parameter">Author</div>
+                    <div id="index-length" class="parameter">Num. of Pages</div>
+                    <div id="index-genre" class="parameter">Genre</div>
+                    <div id="index-read" class="parameter">Read status</div>
+                    <div id="index-invis"><p> </p></div>
                 </div>
                 <div class="books-wrap"></div>
             </div>
