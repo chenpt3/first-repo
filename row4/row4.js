@@ -23,6 +23,7 @@ const Board = (() => {
         let token = EMPTY_TOKEN;
         let cellNum = null;
         let cellClaimed = false;
+        let fullRow = false;
 
         const setToken = (newToken) => token = newToken;
         const getToken = () => token;
@@ -30,9 +31,11 @@ const Board = (() => {
         const getCellNum = () => cellNum;
         const setCellClaimed = (newCellClaimed) => cellClaimed = newCellClaimed;
         const getCellClaimed = () => cellClaimed;
+        const getFullRow = () => fullRow;
+        const setFullRow = (newFullRow) => fullRow = newFullRow;
 
 
-        return { setToken, getToken, setCellNum, getCellNum, setCellClaimed, getCellClaimed};
+        return { setToken, getToken, setCellNum, getCellNum, setCellClaimed, getCellClaimed, getFullRow, setFullRow};
     };
 
     const initBoard = () => { 
@@ -69,6 +72,7 @@ const Board = (() => {
 const GameControls = (() => {
     let player1 = Player("Player 1", "X");
     let player2 = Player("Player 2", "O");
+    let winningCells = [];
     let currentPlayer = player1;
 
     const getCurrentPlayer = () => currentPlayer;
@@ -93,24 +97,28 @@ const GameControls = (() => {
                     board[i][j].getToken() === board[i][j + 1].getToken() &&
                     board[i][j].getToken() === board[i][j + 2].getToken() &&
                     board[i][j].getToken() === board[i][j + 3].getToken()) {
+                    winningCells = [board[i][j], board[i][j + 1], board[i][j + 2], board[i][j + 3]];
                     return true;
                 }
                 if (i + 3 < ROWS) {
                     if (board[i][j].getToken() === board[i + 1][j].getToken() &&
                         board[i][j].getToken() === board[i + 2][j].getToken() &&
                         board[i][j].getToken() === board[i + 3][j].getToken()) {
+                        winningCells = [board[i][j], board[i + 1][j], board[i + 2][j], board[i + 3][j]];
                         return true;
                     }
                     if (j + 3 < COLUMNS &&
                         board[i][j].getToken() === board[i + 1][j + 1].getToken() &&
                         board[i][j].getToken() === board[i + 2][j + 2].getToken() &&
                         board[i][j].getToken() === board[i + 3][j + 3].getToken()) {
+                        winningCells = [board[i][j], board[i + 1][j + 1], board[i + 2][j + 2], board[i + 3][j + 3]];
                         return true;
                     }
                     if (j - 3 >= 0 &&
                         board[i][j].getToken() === board[i + 1][j - 1].getToken() &&
                         board[i][j].getToken() === board[i + 2][j - 2].getToken() &&
                         board[i][j].getToken() === board[i + 3][j - 3].getToken()) {
+                        winningCells = [board[i][j], board[i + 1][j - 1], board[i + 2][j - 2], board[i + 3][j - 3]];
                         return true;
                     }
                 }
@@ -136,6 +144,7 @@ const GameControls = (() => {
     const resetGame = () => {
         Board.resetBoard();
         currentPlayer = player1;
+        winningCells = [];
     };
 
     const getRoundWinner = () => {
@@ -150,7 +159,7 @@ const GameControls = (() => {
         return [player1.getScore(), player2.getScore()];
     };
 
-    return { getRoundWinner, getPlayersScore, initGame, resetGame, getCurrentPlayer, switchPlayer, checkIfValidMove, checkIfWin, checkIfDraw, player1, player2};
+    return { getRoundWinner, getPlayersScore, initGame, resetGame, getCurrentPlayer, switchPlayer, checkIfValidMove, checkIfWin, checkIfDraw, player1, player2, winningCells};
 })();
 
 const DOMControls = (() => {
@@ -181,6 +190,12 @@ const DOMControls = (() => {
     const player1EndScore = document.querySelector('#player1-end-score');
     const player2EndScore = document.querySelector('#player2-end-score');
 
+    const clearBoard = () => {
+        while (board.firstChild) {
+            board.removeChild(board.firstChild);
+        };
+    };
+
     const changeScreen = (screen) => {
         START_SCREEN.classList.add("display-off");
         START_SCREEN.classList.remove("display-on");
@@ -195,12 +210,33 @@ const DOMControls = (() => {
         screen.classList.add("display-on");
     };
 
+    const getTopCell = (column) => {
+        const boardArr = Board.getBoard();
+        for (let i = 0; i < ROWS; i++) {
+            for (let j = 0; j < COLUMNS; j++) {
+                if (j === column && boardArr[i][j].getToken() !== EMPTY_TOKEN) {
+                    let cellNum = boardArr[i][j].getCellNum();
+                    let cell = getCellDiv(cellNum);
+                    return cell;
+                };         
+            };
+        };
+        return null;
+    };
+
     const addListener = (element, handler, event = "click") => {
         element.addEventListener(event, handler);
     };
 
     const removeListener = (element, handler, event = "click") => {
         element.removeEventListener(event, handler);
+    };
+
+    const clearCellListeners = () => {
+        const cells = document.querySelectorAll('.cell');
+        cells.forEach(cell => {
+            cell.removeEventListener('click', cellHandler);
+        });
     };
 
     const getSettings = () => {
@@ -228,19 +264,21 @@ const DOMControls = (() => {
         GameControls.player2.setName(player2Name);
     };
 
-    const startBtnHandler = () => {
-        changeScreen(SETTINGS_SCREEN);
+    const startBtnHandler = async () => {
         removeListener(startBtn, startBtnHandler);
-        addListener(startGameBtn, startGameBtnHandlerHome);
-        addListener(settingsBackBtn, backBtnHandlerHome);
         settingsBackBtn.innerHTML = "Exit";
         rowsInput.value = 6;
         columnsInput.value = 7;
         player1NameInput.value = "Player 1";
         player2NameInput.value = "Player 2";
+        await startScreenTransitionAnimation();
+        addListener(startGameBtn, startGameBtnHandlerHome);
+        addListener(settingsBackBtn, backBtnHandlerHome);
+        changeScreen(SETTINGS_SCREEN);
     };
 
-    const backBtnHandlerHome = () => {
+    const backBtnHandlerHome = async () => {
+        await settingsExitAnimation();
         changeScreen(START_SCREEN);
         removeListener(settingsBackBtn, backBtnHandlerHome);
         removeListener(startGameBtn, startGameBtnHandlerHome);
@@ -248,18 +286,20 @@ const DOMControls = (() => {
         settingsBackBtn.innerHTML = "";
     };
 
-    const startGameBtnHandlerHome = () => {
-        changeScreen(GAME_SCREEN);
+    const startGameBtnHandlerHome = async () => {
         removeListener(startGameBtn, startGameBtnHandlerHome);
         removeListener(settingsBackBtn, backBtnHandlerHome);
         addListener(backBtn, backBtnHandler);
         addListener(settingsBtn, settingsBtnHandler);
         getSettings();
         handleGame();
+        await gameStartAnimation();
+        changeScreen(GAME_SCREEN);
         settingsBackBtn.innerHTML = "";
     };
 
-    const backBtnHandlerGame = () => {
+    const backBtnHandlerGame = async () => {
+        await gameBackAnimation();
         changeScreen(GAME_SCREEN);
         removeListener(settingsBackBtn, backBtnHandlerGame);
         removeListener(startGameBtn, startGameBtnHandlerGame);
@@ -274,7 +314,7 @@ const DOMControls = (() => {
         exitBtnHandler();
     };
 
-    const startGameBtnHandlerGame = () => {
+    const startGameBtnHandlerGame = async () => {
         removeListener(settingsBackBtn, backBtnHandlerGame);
         removeListener(startGameBtn, startGameBtnHandlerGame);
         GameControls.player1.resetScore();
@@ -283,13 +323,46 @@ const DOMControls = (() => {
         restartBtnHandler();
     };
 
-    const settingsBtnHandler = () => {
+    const settingsBtnHandler = async () => {
         settingsBackBtn.innerHTML = "Back";
+        await gameSettingsAnimation();
         changeScreen(SETTINGS_SCREEN);
         removeListener(backBtn, backBtnHandler);
         removeListener(settingsBtn, settingsBtnHandler);
         addListener(startGameBtn, startGameBtnHandlerGame);
         addListener(settingsBackBtn, backBtnHandlerGame);
+    };
+
+    const restartBtnHandler = async () => {
+        clearCellListeners();
+        addListener(backBtn, backBtnHandler);
+        addListener(settingsBtn, settingsBtnHandler);
+        clearBoard();
+        GameControls.resetGame();
+        handleGame();
+        if (END_SCREEN.classList.contains("display-on")) {
+            await endRestartAnimation();
+        } else {
+            await gameStartAnimation();
+        };
+        changeScreen(GAME_SCREEN);
+    };
+
+    const exitBtnHandler = async () => {
+        if (END_SCREEN.classList.contains("display-on")) {
+            removeListener(restartBtn, restartBtnHandler);
+            removeListener(exitBtn, exitBtnHandler);
+            await endExitAnimation();
+        } else {
+            await gameExitAnimation();
+        };
+        clearCellListeners();
+        changeScreen(START_SCREEN);
+        addListener(startBtn, startBtnHandler);
+        clearBoard();
+        GameControls.resetGame();
+        GameControls.player1.resetScore();
+        GameControls.player2.resetScore();
     };
 
     const handleGame = () => {
@@ -298,20 +371,7 @@ const DOMControls = (() => {
         renderGamePlayer();
     };
 
-    const clearBoard = () => {
-        while (board.firstChild) {
-            board.removeChild(board.firstChild);
-        };
-    };
-
-    const clearCellListeners = () => {
-        const cells = document.querySelectorAll('.cell');
-        cells.forEach(cell => {
-            cell.removeEventListener('click', cellHandler);
-        });
-    };
-
-    const cellHandler = (e) => {
+    const cellHandler = async (e) => {
         let cell = e.target;
         let cellClaimed = cell.dataset.cellClaimed;
         let cellNum = parseInt(cell.dataset.cellNum);
@@ -327,45 +387,9 @@ const DOMControls = (() => {
             gameEndHandler("draw");
         };
         GameControls.switchPlayer();
+        checkFullRow();
         renderBoard();
-    };
-
-    const restartBtnHandler = () => {
-        clearCellListeners();
-        changeScreen(GAME_SCREEN);
-        addListener(backBtn, backBtnHandler);
-        addListener(settingsBtn, settingsBtnHandler);
-        clearBoard();
-        GameControls.resetGame();
-        handleGame();
-    };
-
-    const exitBtnHandler = () => {
-        if (END_SCREEN.classList.contains("display-on")) {
-            removeListener(restartBtn, restartBtnHandler);
-            removeListener(exitBtn, exitBtnHandler);
-        };
-        clearCellListeners();
-        changeScreen(START_SCREEN);
-        addListener(startBtn, startBtnHandler);
-        clearBoard();
-        GameControls.resetGame();
-        GameControls.player1.resetScore();
-        GameControls.player2.resetScore();
-    };
-
-    const renderGamePlayer = () => {
-        player1NameOutput.textContent = GameControls.player1.getName();
-        player2NameOutput.textContent = GameControls.player2.getName();
-        player1ScoreOutput.textContent = GameControls.player1.getScore();
-        player2ScoreOutput.textContent = GameControls.player2.getScore();
-    };
-
-    const renderEndPlayer = () => {
-        player1EndName.textContent = GameControls.player1.getName();
-        player2EndName.textContent = GameControls.player2.getName();
-        player1EndScore.textContent = GameControls.player1.getScore();
-        player2EndScore.textContent = GameControls.player2.getScore();
+        await insertTokenAnimation(cell);
     };
 
     const gameEndHandler = (state) => {
@@ -383,7 +407,40 @@ const DOMControls = (() => {
         renderEndPlayer();
     };
 
-    const renderBoard = () => {
+    const renderGamePlayer = () => {
+        player1NameOutput.textContent = GameControls.player1.getName();
+        player2NameOutput.textContent = GameControls.player2.getName();
+        player1ScoreOutput.textContent = GameControls.player1.getScore();
+        player2ScoreOutput.textContent = GameControls.player2.getScore();
+    };
+
+    const renderEndPlayer = () => {
+        player1EndName.textContent = GameControls.player1.getName();
+        player2EndName.textContent = GameControls.player2.getName();
+        player1EndScore.textContent = GameControls.player1.getScore();
+        player2EndScore.textContent = GameControls.player2.getScore();
+    };
+
+    const setFullRow = async (column) => {
+        const boardArr = Board.getBoard();
+        for (i = 0; i < ROWS; i++) {
+            for (j = 0; j < COLUMNS; j++) {
+                if (j === column) {
+                    boardArr[i][j].dataset.fullRow = "true";
+                };
+            };
+        };
+    };
+
+    const checkFullRow = async () => {
+        const boardArr = Board.getBoard();
+        for (i = 0; i < COLUMNS; i++) {
+            if (boardArr[0][i].getToken() !== EMPTY_TOKEN && boardArr[0][i].getFullRow() === false) {
+                setFullRow(i);
+            };
+        };
+    };
+    const renderBoard = async () => {
         clearBoard();
         const boardArr = Board.getBoard();
         for (let i = 0; i < ROWS; i++) {
@@ -396,6 +453,10 @@ const DOMControls = (() => {
                 cell.dataset.cellNum = boardArr[i][j].getCellNum();
                 cell.dataset.cellClaimed = boardArr[i][j].getCellClaimed();
                 cell.dataset.token = boardArr[i][j].getToken();
+                cell.dataset.fullRow = boardArr[i][j].getFullRow();
+                if (cell.dataset.fullRow === "true") {
+                    cell.classList.add('full-row');
+                };
                 if (cell.dataset.token === GameControls.player1.getToken()) {
                     cell.classList.add('cell-player1');
                 } else if (cell.dataset.token === GameControls.player2.getToken()) {
@@ -405,14 +466,177 @@ const DOMControls = (() => {
                 };
                 if (i === 0) {
                     cell.classList.add('cell-top');
-                };
+                };;
                 cell.addEventListener('click', cellHandler);
                 row.appendChild(cell);
             };
         };
-
     };
 
+    const startScreenTransitionAnimation = async () => {
+        START_SCREEN.classList.add("start-screen-start-animation");
+        SETTINGS_SCREEN.classList.add("settings-screen-start-animation");
+        SETTINGS_SCREEN.classList.add("display-on");
+        await new Promise(r => setTimeout(r, 500));
+        SETTINGS_SCREEN.classList.remove("settings-screen-start-animation");
+        START_SCREEN.classList.remove("start-screen-start-animation");
+        START_SCREEN.classList.remove("display-on");
+    };
+
+    const settingsExitAnimation = async () => {
+        START_SCREEN.classList.remove("display-off");
+        START_SCREEN.classList.add("display-on");
+        SETTINGS_SCREEN.classList.add("settings-screen-exit-animation");
+        await new Promise(r => setTimeout(r, 500));
+        SETTINGS_SCREEN.classList.remove("settings-screen-exit-animation");
+        SETTINGS_SCREEN.classList.remove("display-on");
+    };
+
+    const gameStartAnimation = async () => {
+        GAME_SCREEN.classList.remove("display-off");
+        GAME_SCREEN.classList.add("display-on");
+        GAME_SCREEN.classList.add("game-screen-game-start-animation");
+        SETTINGS_SCREEN.classList.add("settings-screen-game-start-animation");
+        await new Promise(r => setTimeout(r, 500));
+        SETTINGS_SCREEN.classList.remove("settings-screen-game-start-animation");
+        GAME_SCREEN.classList.remove("game-screen-game-start-animation");
+        GAME_SCREEN.classList.remove("display-on");
+    };
+
+    const gameExitAnimation = async () => {
+        START_SCREEN.classList.remove("display-off");
+        START_SCREEN.classList.add("display-on");
+        GAME_SCREEN.classList.add("game-screen-game-exit-animation");
+        await new Promise(r => setTimeout(r, 500));
+        GAME_SCREEN.classList.remove("game-screen-game-exit-animation");
+
+        GAME_SCREEN.classList.remove("display-on");
+    };
+
+    const gameSettingsAnimation = async () => {
+        SETTINGS_SCREEN.classList.remove("display-off");
+        SETTINGS_SCREEN.classList.add("display-on");
+        SETTINGS_SCREEN.classList.add("settings-screen-game-settings-animation");
+        GAME_SCREEN.classList.add("game-screen-game-settings-animation");
+        await new Promise(r => setTimeout(r, 500));
+        SETTINGS_SCREEN.classList.remove("settings-screen-game-settings-animation");
+        GAME_SCREEN.classList.remove("game-screen-game-settings-animation");
+        GAME_SCREEN.classList.remove("display-on");
+    };
+
+    const gameBackAnimation = async () => {
+        GAME_SCREEN.classList.remove("display-off");
+        GAME_SCREEN.classList.add("display-on");
+        GAME_SCREEN.classList.add("game-screen-game-back-animation");
+        SETTINGS_SCREEN.classList.add("settings-screen-game-back-animation");
+        await new Promise(r => setTimeout(r, 500));
+        SETTINGS_SCREEN.classList.remove("display-on");
+        SETTINGS_SCREEN.classList.remove("settings-screen-game-back-animation");
+        GAME_SCREEN.classList.remove("game-screen-game-back-animation");
+      
+    };
+    
+    const gameStartDecorativeAnimation = async () => {};
+
+    const endRestartAnimation = async () => {
+        GAME_SCREEN.classList.remove("display-off");
+        GAME_SCREEN.classList.add("display-on");
+        GAME_SCREEN.classList.add("game-screen-end-restart-animation");
+        END_SCREEN.classList.add("end-screen-end-restart-animation");
+        await new Promise(r => setTimeout(r, 500));
+        END_SCREEN.classList.remove("end-screen-end-restart-animation");
+        GAME_SCREEN.classList.remove("game-screen-end-restart-animation");
+        GAME_SCREEN.classList.remove("display-on");
+    };
+
+    const endExitAnimation = async () => {
+        START_SCREEN.classList.remove("display-off");
+        START_SCREEN.classList.add("display-on");
+        START_SCREEN.classList.add("start-screen-end-exit-animation");
+        END_SCREEN.classList.add("end-screen-end-exit-animation");
+        await new Promise(r => setTimeout(r, 500));
+        END_SCREEN.classList.remove("end-screen-end-exit-animation");
+        START_SCREEN.classList.remove("start-screen-end-exit-animation");
+        END_SCREEN.classList.remove("display-on");
+    };
+
+    const getCellDiv = (cellIndex) => {
+        let cells = Array.from(document.querySelectorAll('.cell'));
+        return cells[cellIndex];
+    };
+
+    const insertTokenAnimation = async (token) => {
+        let tempCol = parseInt(token.dataset.cellNum) % COLUMNS;
+        let topCell = getTopCell(tempCol);
+        let rowOfTopCell = parseInt(parseInt(topCell.dataset.cellNum) / COLUMNS);
+        switch (rowOfTopCell) {
+            case 0:
+                topCell.classList.add('insert-token-row-0');
+                await new Promise(r => setTimeout(r, 500));
+                topCell.classList.remove('insert-token-row-0');
+                break;
+            case 1:
+                topCell.classList.add('insert-token-row-1');
+                await new Promise(r => setTimeout(r, 500));
+                topCell.classList.remove('insert-token-row-1');
+                break;
+            case 2:
+                topCell.classList.add('insert-token-row-2');
+                await new Promise(r => setTimeout(r, 500));
+                topCell.classList.remove('insert-token-row-2');
+                break;
+            case 3:
+                topCell.classList.add('insert-token-row-3');
+                await new Promise(r => setTimeout(r, 500));
+                topCell.classList.remove('insert-token-row-3');
+                break;
+            case 4:
+                topCell.classList.add('insert-token-row-4');
+                await new Promise(r => setTimeout(r, 500));
+                topCell.classList.remove('insert-token-row-4');
+                break;
+            case 5:
+                topCell.classList.add('insert-token-row-5');
+                await new Promise(r => setTimeout(r, 500));
+                topCell.classList.remove('insert-token-row-5');
+                break;
+            case 6:
+                topCell.classList.add('insert-token-row-6');
+                await new Promise(r => setTimeout(r, 500));
+                topCell.classList.remove('insert-token-row-6');
+                break;
+            case 7:
+                topCell.classList.add('insert-token-row-7');
+                await new Promise(r => setTimeout(r, 500));
+                topCell.classList.remove('insert-token-row-7');
+                break;
+            case 8:
+                topCell.classList.add('insert-token-row-8');
+                await new Promise(r => setTimeout(r, 500));
+                topCell.classList.remove('insert-token-row-8');
+                break;
+        };
+    };
+
+    const fillingColumnAnimation = async (cell) => {
+        let columnNum = parseInt(cell.dataset.cellNum) % COLUMNS;
+        let column = document.querySelectorAll(`[data-cell-num="${columnNum}"]`);
+        column.forEach(cell => {
+            cell.classList.add('filling-column');
+        });
+        await new Promise(r => setTimeout(r, 500));
+        column.forEach(cell => {
+            cell.classList.remove('filling-column');
+        });
+    };
+
+    const winningCellsAnimation = async () => {};
+
+    const drawCellsAnimation = async () => {};
+
+    const winAnimation = async () => {};
+
+    const drawAnimation = async () => {};
 
     const init = () => {
         addListener(startBtn, startBtnHandler);

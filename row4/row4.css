@@ -139,8 +139,25 @@ button:active {
     background-color: #b72a2a;
 }
 
-.cell-top {
-    opacity: 50%;
+.full-row {
+    border: 1px solid rgb(148, 148, 148);
+}
+
+.full-row:hover {
+    background-color: #9d9d9d;
+}
+
+.filling-column {
+    animation: filling-column 1s;
+    position: relative;
+}
+
+@keyframes filling-column {
+    from {
+        top: 0;
+    } to {
+        top: 100px;
+    }
 }
 
 .players {
@@ -174,4 +191,356 @@ button:active {
     justify-content: center;
     align-items: center;
     padding: 30px;
+}
+
+
+
+@keyframes start-screen-start-transition {
+    from {
+        transform: translate(0, 0);
+        opacity: 1;
+    } to {
+        transform: translate(0, -25%);
+        opacity: 0;
+    }
+}
+
+@keyframes settings-screen-start-transition {
+    from {
+        opacity: 0;
+    } to {
+        opacity: 1;
+    }
+}
+
+@keyframes settings-screen-exit-transition {
+    from {
+        transform: translate(0, 0);
+        opacity: 1;
+    } to {
+
+        transform: translate(-30%, 0);
+        opacity: 0;
+    }
+}
+
+@keyframes game-screen-game-start-animation {
+    from {
+        opacity: 0;
+    } to {
+        opacity: 1;
+    }
+}
+
+@keyframes settings-screen-game-start-animation {
+    from {
+        opacity: 1;
+    } to {
+        opacity: 0;
+    }
+}
+
+@keyframes start-screen-game-exit-transition {
+    from {
+        transform: translate(0, 0);
+        opacity: 1;
+    } to {
+        transform: translate(0, -25%);
+        opacity: 0;
+    }
+}
+
+@keyframes game-screen-game-exit-transition {
+    from {
+        transform: translate(0, 0);
+        opacity: 1;
+    } to {
+        transform: translate(-30%, 0);
+        opacity: 0;
+    }
+}
+
+@keyframes settings-screen-game-settings-animation {
+    from {
+        opacity: 0;
+    } to {
+        opacity: 1;
+    }
+}
+
+@keyframes game-screen-game-settings-animation {
+    from {
+        transform: translate(0, 0);
+        opacity: 1;
+    } to {
+        transform: translate(0, -25%);
+        opacity: 0;
+    }
+}
+
+@keyframes game-screen-game-back-animation {
+    from {
+        transform: translate(40%, 0);
+        opacity: 0;
+    } to {
+        transform: translate(0, 0);
+        opacity: 1;
+    }
+}
+
+@keyframes settings-screen-game-back-animation {
+    from {
+        transform: translate(0, 0);
+        opacity: 1;
+    } to {
+        transform: translate(-30%, 0);
+        opacity: 0;
+    }
+}
+
+@keyframes game-screen-end-restart-animation {
+    from {
+        opacity: 0;
+    } to {
+        opacity: 1;
+    }
+}
+
+@keyframes end-screen-end-restart-animation {
+    from {
+        opacity: 1;
+    } to {
+        opacity: 0;
+    }
+}
+
+@keyframes start-screen-end-exit-animation {
+    from {
+        transform: translate(0, 0);
+        opacity: 0;
+    } to {
+        transform: translate(0, 0);
+        opacity: 1;
+    }
+}
+
+@keyframes end-screen-end-exit-animation {
+    from {
+        transform: translate(0, 0);
+        opacity: 1;
+    } to {
+        transform: translate(0, -25%);
+        opacity: 0;
+    }
+}
+
+.start-screen-start-animation {
+    animation: start-screen-start-transition 0.5s;
+    position: relative;
+    display: flex;
+}
+
+.settings-screen-start-animation {
+    animation: settings-screen-start-transition 0.5s;
+    position: relative;
+    display: flex;
+    top: -100%;
+}
+
+.settings-screen-exit-animation {
+    animation: settings-screen-exit-transition 0.5s;
+    position: relative;
+    top: -100%;
+}
+
+.game-screen-game-start-animation {
+    animation: game-screen-game-start-animation 0.5s;
+    position: relative;
+    display: flex;
+    top: -100%;
+}
+
+.settings-screen-game-start-animation {
+    animation: settings-screen-game-start-animation 0.5s;
+    position: relative;
+    display: flex;
+}
+
+.start-screen-game-exit-animation {
+    animation: start-screen-game-exit-transition 0.5s;
+    position: relative;
+    top: -100%;
+}
+
+.game-screen-game-exit-animation {
+    animation: game-screen-game-exit-transition 0.5s;
+    position: relative;
+    top: -100%;
+}
+
+.settings-screen-game-settings-animation {
+    display: flex;
+    animation: settings-screen-game-settings-animation 0.5s;
+
+}
+
+.game-screen-game-settings-animation {
+    display: flex;
+    animation: game-screen-game-settings-animation 0.5s;
+    top: -100%;
+    position: relative;
+}
+
+.game-screen-game-back-animation {
+    animation: game-screen-game-back-animation 0.5s;
+    position: relative;
+    display: flex;
+    top: -100%;
+}
+
+.settings-screen-game-back-animation {
+    animation: settings-screen-game-back-animation 0.5s;
+    display: flex;
+}
+
+.game-screen-end-restart-animation {
+    animation: game-screen-end-restart-animation 0.5s;
+    display: flex;
+}
+
+.end-screen-end-restart-animation {
+    animation: end-screen-end-restart-animation 0.5s;
+    position: relative;
+    display: flex;
+    top: -100%;
+}
+
+.start-screen-end-exit-animation {
+    animation: start-screen-end-exit-animation 0.5s;
+    display: flex;
+}
+
+.end-screen-end-exit-animation {
+    animation: end-screen-end-exit-animation 0.5s;
+    position: relative;
+    top: -100%;
+    display: flex;
+}
+
+.insert-token-row-0 {
+    animation: insert-token-row-0 0.4s;
+    position: relative;
+}
+
+@keyframes insert-token-row-0 {
+    from {
+        transform: translateY(-600%);
+    } to {
+        transform: translateY(0);
+    }
+}
+
+.insert-token-row-1 {
+    animation: insert-token-row-1 0.4s;
+    position: relative;
+}
+
+@keyframes insert-token-row-1 {
+    from {
+        transform: translateY(-600%);
+    } to {
+        transform: translateY(0);
+    }
+}
+
+.insert-token-row-2 {
+    animation: insert-token-row-2 0.4s;
+    position: relative;
+}
+
+@keyframes insert-token-row-2 {
+    from {
+        transform: translateY(-600%);
+    } to {
+        transform: translateY(0);
+    }
+}
+
+.insert-token-row-3 {
+    animation: insert-token-row-3 0.4s;
+    position: relative;
+}
+
+@keyframes insert-token-row-3 {
+    from {
+        transform: translateY(-600%);
+    } to {
+        transform: translateY(0);
+    }
+}
+
+.insert-token-row-4 {
+    animation: insert-token-row-4 0.4s;
+    position: relative;
+}
+
+@keyframes insert-token-row-4 {
+    from {
+        transform: translateY(-600%);
+    } to {
+        transform: translateY(0);
+    }
+}
+
+.insert-token-row-5 {
+    animation: insert-token-row-5 0.4s;
+    position: relative;
+}
+
+@keyframes insert-token-row-5 {
+    from {
+        transform: translateY(-600%);
+    } to {
+        transform: translateY(0);
+    }
+}
+
+.insert-token-row-6 {
+    animation: insert-token-row-6 0.4s;
+    position: relative;
+}
+
+
+@keyframes insert-token-row-6 {
+    from {
+        transform: translateY(-600%);
+    } to {
+        transform: translateY(0);
+    }
+}
+
+.insert-token-row-7 {
+    animation: insert-token-row-7 0.4s;
+    position: relative;
+}
+
+@keyframes insert-token-row-7 {
+    from {
+        transform: translateY(-600%);
+    } to {
+        transform: translateY(0);
+    }
+}
+
+.insert-token-row-8 {
+    animation: insert-token-row-8 0.4s;
+    position: relative;
+}
+
+@keyframes insert-token-row-8 {
+    from {
+        transform: translateY(-600%);
+    } to {
+        transform: translateY(0);
+    }
 }
