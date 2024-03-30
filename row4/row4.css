@@ -1,0 +1,177 @@
+*, *::after, *::before {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+body {
+  font-family: 'Roboto', sans-serif;
+  background-color: #f5f5f5;
+}
+
+.main-wrap {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.heading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 20%;
+    font-size: 2rem;
+}
+
+.content {
+    height: 80%;
+}
+
+.display-on {
+    display: flex;
+}
+
+.display-off {
+    display: none;
+}
+
+button {
+    text-align: center;
+    border: none;
+    font-size: 1.4rem;
+    padding: 10px 20px;
+    background-color: #39b2de;
+    color: #f5f5f5;
+}
+
+button:hover {
+    background-color: #c6c6c6;
+    color: #2a8ab7;
+}
+
+button:active {
+    background-color: #2a8ab7;
+    color: #f5f5f5;
+}
+
+
+.game-wrap {
+    border: black 1px solid;
+    height: 500px;
+    width: 500px;
+}
+
+#start-screen, #settings-screen, #game-screen, #end-screen {
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    width: 100%;
+}
+
+.header {
+    height: 20%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.screen-content {
+    height: 70%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 10%;
+    gap: 20px;
+}
+
+.settings-div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.setting-row {
+    display: flex;
+    justify-content: space-between;
+    width: 220px;
+}
+
+.setting-row > label {
+    font-size: 1.2rem;
+}
+
+.setting-row > input {
+    width: 130px;
+    font-size: 1.2rem;
+}
+
+.board {
+    display: flex;;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.cell-row {
+    display: flex;
+}
+
+.cell {
+    border: 1px solid black;
+    height: 35px;
+    width: 35px;
+}
+
+.cell-empty {
+    background-color: #f5f5f5;
+}
+
+.cell-player1 {
+    background-color: #39b2de;
+}
+
+.cell-player2 {
+    background-color: #b72a2a;
+}
+
+.cell-top {
+    opacity: 50%;
+}
+
+.players {
+    display: flex;
+}
+
+#seprator {
+    margin: 0 10px;
+}
+
+#end-message {
+    font-size: 1.5rem;
+    text-align: center;
+    padding-bottom: 30px;
+}
+
+#end-players {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+#end-players > div {
+    display: flex;
+    justify-content: space-between;
+}
+
+#end-controls {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    align-items: center;
+    padding: 30px;
+}
