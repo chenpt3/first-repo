@@ -56,7 +56,6 @@ button:active {
     color: #f5f5f5;
 }
 
-
 .game-wrap {
     border: black 1px solid;
     height: 500px;
@@ -89,6 +88,7 @@ button:active {
 }
 
 .settings-div {
+    margin-bottom: 30px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -98,16 +98,49 @@ button:active {
 .setting-row {
     display: flex;
     justify-content: space-between;
-    width: 220px;
+    width: 300px;
+    align-items: center;
 }
 
-.setting-row > label {
+#rows, #columns {
+    width: 50px;
+    height: 1.9rem;
+    font-size: 1.2rem;
+    padding: 5px;
+
+}
+
+label {
     font-size: 1.2rem;
 }
 
-.setting-row > input {
-    width: 130px;
+#player1, #player2 {
+    width: 150px;
+    height: 1.9rem;
     font-size: 1.2rem;
+    padding: 5px;
+}
+
+.disabled-diff {
+    color: #727272;
+}
+
+.disabled-name {
+    color: #727272;
+}
+
+#setting-div-1 {
+    height: 10px;
+    width: 60%;
+    border-bottom: 1px solid rgb(202, 202, 202);
+    margin-bottom: 10px;
+} 
+
+#setting-div-2 {
+    height: 20px;
+    width: 80%;
+    border-bottom: 1px solid rgb(149, 149, 149);
+    margin-bottom: 10px;
 }
 
 .board {
@@ -129,14 +162,6 @@ button:active {
 
 .cell-empty {
     background-color: #f5f5f5;
-}
-
-.cell-player1 {
-    background-color: #39b2de;
-}
-
-.cell-player2 {
-    background-color: #b72a2a;
 }
 
 .full-row {
@@ -164,9 +189,10 @@ button:active {
     display: flex;
 }
 
-#seprator {
-    margin: 0 10px;
-}
+
+#player2-score, #player1-score {
+    font-weight: 600;
+}  
 
 #end-message {
     font-size: 1.5rem;
@@ -191,6 +217,11 @@ button:active {
     justify-content: center;
     align-items: center;
     padding: 30px;
+}
+
+#seperator {
+    padding-right: 10px;
+    padding-left: 10px;
 }
 
 

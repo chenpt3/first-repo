@@ -1,6 +1,8 @@
-const Player = (name) => {
+// Define Player object
+const Player = (name = "player") => {
     let score = 0;
     let active = false;
+    let isBot = false;
 
     const setName = (newName) => name = newName;
     const getName = () => name;
@@ -9,10 +11,203 @@ const Player = (name) => {
     const resetScore = () => score = 0;
     const setActive = (newActive) => active = newActive;
     const getActive = () => active;
+    const getIsBot = () => isBot;
+    const setIsBot = (newIsBot) => isBot = newIsBot;
 
-    return { setName, getName, getScore, incrementScore, resetScore, setActive, getActive};
-}; 
+    return { setName, getName, getScore, incrementScore, resetScore, setActive, getActive, getIsBot, setIsBot };
+};
 
+// Define bot module
+const BotLogic = (() => {
+    const getBotChoice = (difficulty = 1) => {
+        let choice;
+        do {
+            if (difficulty === "1") {
+                choice = easyChoice();
+            } else if (difficulty === "2") {
+                choice = mediumChoice();
+            } else if (difficulty === "3") {
+                choice = hardChoice();
+            } else if (difficulty === "4") {
+                choice = impossibleChoice();
+            }
+        } while (!isValidMove(choice));
+        return choice;
+    };
+
+    const isValidMove = (column) => {
+        const boardObj = GameControls.getGameBoard();
+        const board = boardObj.board;
+        const rows = boardObj.rows;
+        for (let i = 0; i < rows; i++) {
+            if (!board[i][column].getCellOwner()) {
+                return true;
+            }
+        }
+        return false;
+    };
+
+    const getEmptyColumns = () => {
+        const boardObj = GameControls.getGameBoard();
+        const board = boardObj.board;
+        const cols = boardObj.columns;
+        const emptyColumns = [];
+        for (let i = 0; i < cols; i++) {
+            if (!board[0][i].getCellOwner()) {
+                emptyColumns.push(i);
+            };
+        };
+        return emptyColumns;
+    };
+    
+    const easyChoice = () => {
+        const emptyColumns = getEmptyColumns();
+        return emptyColumns[Math.floor(Math.random() * emptyColumns.length)];
+    };
+    
+    const mediumChoice = () => {
+        let canWin = checkIfThisMoveWins();
+        if (canWin !== null && getEmptyColumns().includes(canWin)) {
+            return canWin;
+        } else {
+            return easyChoice();
+        };
+    };
+    
+    const hardChoice = () => {
+        let canWin = checkIfThisMoveWins();
+        let canBlock = checkIfCanBlockWin();
+        console.log(`can win: ${canWin}, can block: ${canBlock}`)
+        if (canWin !== null && getEmptyColumns().includes(canWin)) {
+            return canWin;
+        } else if (canBlock !== null && getEmptyColumns().includes(canBlock)) {
+            // Only block if the bot cannot win in the next move
+            if (checkIfThisMoveWins() === null) {
+                return canBlock;
+            }
+        }
+        // If neither a winning move nor a blocking move is available, make a random move
+        return easyChoice();
+    };
+
+    const impossibleChoice = () => {
+        //minimax
+        return;
+    };
+
+    const canWinInDirection = (board, x, y, dx, dy) => {
+        let cells = [];
+        for (let i = 0; i < 4; i++) {
+            if (board[y + i * dy] && board[y + i * dy][x + i * dx]) {
+                cells.push(board[y + i * dy][x + i * dx].getCellOwner());
+            } else {
+                cells.push(null);
+            };
+        };
+        let botCells = cells.filter(owner => owner === "Bot");
+        let emptyCells = cells.filter(owner => owner === false);
+        if (botCells.length === 3 && emptyCells.length === 1) {
+            const potentialWinningMove = x + cells.indexOf(false) * dx;
+            // Check if the potential winning move is in a column that is not already filled
+            if (isValidMove(potentialWinningMove)) {
+                return potentialWinningMove;
+            }
+        };
+        return null;
+    };
+
+    const checkIfThisMoveWins = () => {
+        const boardObj = GameControls.getGameBoard();
+        const board = boardObj.board;
+        const rows = boardObj.rows;
+        const cols = boardObj.columns;
+    
+        const directions = [
+            { dx: 0, dy: 1 }, // vertical
+            { dx: 1, dy: 0 }, // horizontal
+            { dx: 1, dy: 1 }, // diagonal to the right
+            { dx: 1, dy: -1 } // diagonal to the left
+        ];
+    
+        for (let i = rows - 1; i >= 0; i--) {
+            for (let j = cols - 1; j >= 0; j--) {
+                for (let direction of directions) {
+                    const winMove = canWinInDirection(board, j, i, direction.dx, direction.dy);
+                    if (winMove !== null) {
+                        return winMove;
+                    };
+                };
+            };
+        };
+    
+        return null;
+    };
+
+    const canBlockInDirection = (board, x, y, dx, dy) => {
+        let cells = [];
+        for (let i = 0; i < 4; i++) {
+            if (board[y + i * dy] && board[y + i * dy][x + i * dx]) {
+                cells.push(board[y + i * dy][x + i * dx].getCellOwner());
+            } else {
+                cells.push(null);
+            };
+        };
+        let playerCells = cells.filter(owner => owner !== "Bot" && owner !== null && owner !== false);
+        let emptyCells = cells.filter(owner => owner === false);
+        if (playerCells.length === 3 && emptyCells.length === 1) {
+            const potentialBlockingMove = x + cells.indexOf(false) * dx;
+            const potentialBlockingMoveHeight = y + cells.indexOf(false) * dy;
+            // Check if the potential blocking move is at a valid height in the column
+            if (isValidMove(potentialBlockingMove) && potentialBlockingMoveHeight === getTopEmptyRowInColumn(potentialBlockingMove)) {
+                return potentialBlockingMove;
+            }
+        };
+        return null;
+    };
+    
+    const getTopEmptyRowInColumn = (column) => {
+        const boardObj = GameControls.getGameBoard();
+        const board = boardObj.board;
+        const rows = boardObj.rows;
+        for (let i = rows - 1; i >= 0; i--) {
+            if (!board[i][column].getCellOwner()) {
+                return i;
+            }
+        }
+        return -1;
+    };
+
+    const checkIfCanBlockWin = () => {
+        const boardObj = GameControls.getGameBoard();
+        const board = boardObj.board;
+        const rows = boardObj.rows;
+        const cols = boardObj.columns;
+    
+        const directions = [
+            { dx: 0, dy: 1 }, // vertical
+            { dx: 1, dy: 0 }, // horizontal
+            { dx: 1, dy: 1 }, // diagonal to the right
+            { dx: 1, dy: -1 } // diagonal to the left
+        ];
+    
+        for (let i = rows - 1; i >= 0; i--) {
+            for (let j = cols - 1; j >= 0; j--) {
+                for (let direction of directions) {
+                    const blockMove = canBlockInDirection(board, j, i, direction.dx, direction.dy);
+                    if (blockMove !== null) {
+                        return blockMove;
+                    };
+                };
+            };
+        };
+    
+        return null;
+    };
+
+    return { getBotChoice };
+})();
+
+// Define Board module
 const BoardControls = (() => {
     let gameBoard = {
         board: [],
@@ -20,9 +215,10 @@ const BoardControls = (() => {
         columns: null
     };
 
-    const Cell = () => { // Define Cell object
+    // Define Cell object
+    const Cell = () => {
         let cellNum = null;
-        let cellOwner = null;
+        let cellOwner = false;
         let cellClaimed = false;
         let cellRow = null;
         let cellCol = null;
@@ -54,12 +250,13 @@ const BoardControls = (() => {
         const setIsBoardFull = (newIsBoardFull) => isBoardFull = newIsBoardFull;
         const getIsBoardFull = () => isBoardFull;
         const getCellClaimed = () => cellClaimed;
-        const setCellClaimed = (newSetCellClaimed) => newSetCellClaimed = cellClaimed; 
+        const setCellClaimed = (newSetCellClaimed) => newSetCellClaimed = cellClaimed;
 
         return { setCellNum, getCellNum, setCellOwner, getCellOwner, setCellRow, getCellRow, setCellCol, getCellCol, setIsRowFull, getIsRowFull, setIsColFull, getIsColFull, setIsTopLeftDiagFull, getIsTopLeftDiagFull, setIsTopRightDiagFull, getIsTopRightDiagFull, setIsCellWinning, getIsCellWinning, setIsBoardFull, getIsBoardFull, getCellClaimed, setCellClaimed };
     };
 
-    const initBoard = (rows = 6, columns = 7) => { // Initialize the game board, returns a game board object
+    // Initialize the game board
+    const initBoard = (rows = 6, columns = 7) => {
         let count = 0;
         gameBoard.rows = rows;
         gameBoard.columns = columns;
@@ -79,41 +276,53 @@ const BoardControls = (() => {
 
     const getBoard = () => gameBoard;
 
+    // Function to reset the game board
     const resetBoard = () => gameBoard = {
         board: [],
         rows: null,
         columns: null
     };
 
+    // Function to check if a row is full
     const checkIfRowIsFull = (row) => {
+        // Check if any cell in the row is empty
         for (let i = 0; i < gameBoard.columns; i++) {
-            if (gameBoard.board[row][i].getCellOwner() === null) {
+            if (gameBoard.board[row][i].getCellOwner() === false) {
                 return false;
             };
         };
+
+        // Mark the entire row as full
         for (let i = 0; i < gameBoard.columns; i++) {
             gameBoard.board[row][i].setIsRowFull(true);
         };
+
         return true;
     };
 
     const checkIfColIsFull = (col) => {
+        // Check if any cell in the column is empty
         for (let i = 0; i < gameBoard.rows; i++) {
-            if (gameBoard.board[i][col].getCellOwner() === null) {
-                return false;
+            if (gameBoard.board[i][col].getCellOwner() === false) {
+            return false;
             };
         };
+
+        // Mark the entire column as full
         for (let i = 0; i < gameBoard.rows; i++) {
             gameBoard.board[i][col].setIsColFull(true);
         };
+
         return true;
     };
 
+    // Function to check if the top-left diagonal is full
     const checkIfTopLeftDiagIsFull = (row, col) => {
         let i = row;
         let j = col;
         while (i >= 0 && j >= 0) {
-            if (gameBoard.board[i][j].getCellOwner() === null) {
+            // Check if the cell owner is false
+            if (gameBoard.board[i][j].getCellOwner() === false) {
                 return false;
             };
             i--;
@@ -122,6 +331,7 @@ const BoardControls = (() => {
         i = row;
         j = col;
         while (i < gameBoard.rows && j < gameBoard.columns) {
+            // Set the top-left diagonal as full
             gameBoard.board[i][j].setIsTopLeftDiagFull(true);
             i++;
             j++;
@@ -129,20 +339,22 @@ const BoardControls = (() => {
         return true;
     };
 
+    // Function to check if the top-right diagonal is full
     const checkIfTopRightDiagIsFull = (row, col) => {
         let i = row;
         let j = col;
         while (i >= 0 && j < gameBoard.columns) {
-            if (gameBoard.board[i][j].getCellOwner() === null) {
+            // Check if the cell owner is false
+            if (gameBoard.board[i][j].getCellOwner() === false) {
                 return false;
             };
             i--;
             j++;
-            console.log(i, j)
         };
         i = row;
         j = col;
         while (i < gameBoard.rows && j >= 0) {
+            // Set the top-right diagonal as full
             gameBoard.board[i][j].setIsTopRightDiagFull(true);
             i++;
             j--;
@@ -150,38 +362,48 @@ const BoardControls = (() => {
         return true;
     };
 
+    // Function to insert a token into the specified column for the given player
     const insertToken = (column, player) => {
         let rows = gameBoard.rows;
         let row = rows - 1;
         while (row >= 0) {
-            if (gameBoard.board[row][column].getCellOwner() === null) {
+            // Check if the cell is empty
+            if (gameBoard.board[row][column].getCellOwner() === false) {
+                // Set the cell owner to the player's name
                 gameBoard.board[row][column].setCellOwner(player.getName());
+                // Mark the cell as claimed
                 gameBoard.board[row][column].setCellClaimed(true);
+                // Check if the row is full
                 checkIfRowIsFull(row);
+                // Check if the column is full
                 checkIfColIsFull(column);
+                // Check if the top-left diagonal is full
                 checkIfTopLeftDiagIsFull(row, column);
+                // Check if the top-right diagonal is full
                 checkIfTopRightDiagIsFull(row, column);
                 return;
             };
             row--;
         };
-    }
+    };
 
     return { initBoard, getBoard, resetBoard, insertToken };
 })();
 
+// Define Game module
 const GameControls = (() => {
-    let player1 = Player("Player 1");
-    let player2 = Player("Player 2");
+    let player1 = Player();
+    let player2 = Player();
     let currentPlayer = player1;
     let roundWinner = null;
     let gameWinner = null;
     let lastRoundWinner = null;
 
+    // Function to check if the game board is empty
     const isEmpty = () => {
         for (let i = 0; i < getGameBoard().rows; i++) {
             for (let j = 0; j < getGameBoard().columns; j++) {
-                if (getGameBoard().board[i][j].getCellOwner() !== null) {
+                if (getGameBoard().board[i][j].getCellOwner() !== false) {
                     return false;
                 };
             };
@@ -189,12 +411,15 @@ const GameControls = (() => {
         return true;
     };
 
+    // Function to initialize game settings
     const gameSettings = (rows = null, cols = null) => { 
+        // Check if both players are inactive
         if (player1.getActive() === false && player2.getActive() === false) {
             player1.setActive(true);
             player2.setActive(false);
             currentPlayer = player1;
         };
+        // Check if both players have a score of 0 and the game board is empty
         if (player1.getScore() === 0 && player2.getScore() === 0 && isEmpty()) {
             player1.setActive(true);
             player2.setActive(false);
@@ -205,23 +430,27 @@ const GameControls = (() => {
         gameDraw = false;
     };
 
+    // Function to initialize the game
     const initGame = (rows, cols) => {
         BoardControls.initBoard(rows, cols);
         gameSettings();
     };
 
+    // Function to reset the game
     const resetGame = () => {
         BoardControls.resetBoard();
         gameSettings();
     };
 
+    // Function to check if a move is valid
     const checkIfValidMove = (column) => {
-        if (column < 0 || column >= getGameBoard().board.columns || getGameBoard().board[0][column].getCellOwner() !== null) {
+        if (column < 0 || column >= getGameBoard().board.columns || getGameBoard().board[0][column].getCellOwner() !== false) {
             return false;
         };
         return true;
     };
 
+    // Function to check if a player has won the game
     const checkIfWin = () => {
         if (checkIfRowWin() || checkIfColWin() || checkIfDiagWin()) {
             roundWinner = currentPlayer.getName();
@@ -231,6 +460,7 @@ const GameControls = (() => {
         return false;
     };
 
+    // Function to check if a player has won in a row
     const checkIfRowWin = () => {
         const board = getGameBoard().board;
         for (let i = 0; i < getGameBoard().rows; i++) {
@@ -247,6 +477,7 @@ const GameControls = (() => {
         return false;
     };
 
+    // Function to check if a player has won in a column
     const checkIfColWin = () => {
         const board = getGameBoard().board;
         for (let i = 0; i < getGameBoard().rows - 3; i++) {
@@ -263,6 +494,7 @@ const GameControls = (() => {
         return false;
     };
 
+    // Function to check if a player has won in a diagonal (top-left to bottom-right)
     const checkIfDiagWin = () => {
         if (checkIfTopLeftDiagWin() || checkIfTopRightDiagWin()) {
             return true;
@@ -270,6 +502,7 @@ const GameControls = (() => {
         return false;
     };
 
+    // Function to check if a player has won in a top-left diagonal
     const checkIfTopLeftDiagWin = () => {
         const board = getGameBoard().board;
         for (let i = 0; i < getGameBoard().rows - 3; i++) {
@@ -286,6 +519,7 @@ const GameControls = (() => {
         return false;
     };
 
+    // Function to check if a player has won in a top-right diagonal
     const checkIfTopRightDiagWin = () => {
         const board = getGameBoard().board;
         for (let i = 0; i < getGameBoard().rows - 3; i++) {
@@ -302,11 +536,12 @@ const GameControls = (() => {
         return false;
     };
 
+    // Function to check if the game is a draw
     const checkIfDraw = () => {
         const board = getGameBoard().board;
         for (let i = 0; i < getGameBoard().rows; i++) {
             for (let j = 0; j < getGameBoard().columns; j++) {
-                if (board[i][j].getCellOwner() === null) {
+                if (board[i][j].getCellOwner() === false) {
                     return false;
                 };
             };
@@ -315,22 +550,20 @@ const GameControls = (() => {
         return true;
     };
 
+    // Function to switch the current player
     const switchPlayer = () => {
         if (player1.getActive()) {
             player1.setActive(false);
             player2.setActive(true);
             currentPlayer = player2;
-        } else if (player2.getActive()){
-            player1.setActive(true);
-            player2.setActive(false);
-            currentPlayer = player1;
-        } else {
+        } else if (player2.getActive()) {
             player1.setActive(true);
             player2.setActive(false);
             currentPlayer = player1;
         }
     }
 
+    // Function to reset players' scores
     const resetPlayersScore = () => {
         player1.resetScore();
         player2.resetScore();
@@ -338,34 +571,35 @@ const GameControls = (() => {
 
     const getLastRoundWinner = () => lastRoundWinner;
     const setLastRoundWinner = (newLastRoundWinner) => lastRoundWinner = newLastRoundWinner;
-
     const getGameBoard = () => BoardControls.getBoard();
     const setRoundWinner = (newRoundWinner) => roundWinner = newRoundWinner;
     const getRoundWinner = () => roundWinner;
     const getGameWinner = () => gameWinner;
-    const getCurrentPlayer = () => {
-        if (player1.getActive()) {
-            return player1;
-        } else if (player2.getActive()) {
-            return player2;
-        } else {
-            return player1;
-        }
-    }
+    const getCurrentPlayer = () => currentPlayer;
     const getPlayer1 = () => player1;
     const getPlayer2 = () => player2;
+    const setPlayer1 = (newPlayer1) => player1 = newPlayer1;
+    const setPlayer2 = (newPlayer2) => player2 = newPlayer2;
 
-    return { initGame, resetGame, checkIfValidMove, checkIfWin, checkIfDraw, switchPlayer, getRoundWinner, getGameWinner, getCurrentPlayer, getPlayer1, getPlayer2, getGameBoard, resetPlayersScore, setRoundWinner, getLastRoundWinner, setLastRoundWinner };
+    return { initGame, resetGame, checkIfValidMove, checkIfWin, checkIfDraw, switchPlayer, getRoundWinner, getGameWinner, getCurrentPlayer, getPlayer1, getPlayer2, getGameBoard, resetPlayersScore, setRoundWinner, getLastRoundWinner, setLastRoundWinner, setPlayer1, setPlayer2 };
 })();
 
+// Define DOM general module
 const DOMControls = (() => {
+    // Define constants for different screens and elements
     const START_SCREEN = document.querySelector('#start-screen');
     const SETTINGS_SCREEN = document.querySelector('#settings-screen');
     const GAME_SCREEN = document.querySelector('#game-screen');
     const END_SCREEN = document.querySelector('#end-screen');
     const startBtn = document.querySelector('#start-btn');
     const player1NameInput = document.querySelector('#player1');
+    const player1ColorInput = document.querySelector('#player1-color');
+    const player1BotInput = document.querySelector('#player1-bot');
+    const player1BotDiffInput = document.querySelector('#player1-bot-diff');
     const player2NameInput = document.querySelector('#player2');
+    const player2ColorInput = document.querySelector('#player2-color');
+    const player2BotInput = document.querySelector('#player2-bot');
+    const player2BotDiffInput = document.querySelector('#player2-bot-diff');
     const rowsInput = document.querySelector('#rows');
     const columnsInput = document.querySelector('#columns');
     const startGameBtn = document.querySelector('#start-game-btn');
@@ -385,12 +619,151 @@ const DOMControls = (() => {
     const player1EndScore = document.querySelector('#player1-end-score');
     const player2EndScore = document.querySelector('#player2-end-score');
 
-    const clearBoard = () => {
-        while (board.firstChild) {
-            board.removeChild(board.firstChild);
-        };
+
+    // Handler for the start button on the home screen
+    const startBtnHandler = async () => {
+        removeListener(startBtn, startBtnHandler);
+        settingsBackBtn.innerHTML = "Exit";
+        rowsInput.value = 6;
+        columnsInput.value = 7;
+        player1NameInput.value = "";
+        player2NameInput.value = "";
+        player1ColorInput.value = "#DD0A1E";
+        player2ColorInput.value = "#4470AD";
+        player1BotInput.checked = false;
+        player2BotInput.checked = false;
+        addListener(startGameBtn, startGameBtnHandlerHome);
+        addListener(settingsBackBtn, backBtnHandlerHome);
+        await AnimationsModule.startScreenTransitionAnimation();
+        changeScreen(SETTINGS_SCREEN);
+        InputsControl.init();
     };
 
+    // Handler for the back button on the home settings screen
+    const backBtnHandlerHome = async () => {
+        InputsControl.resetInputsHandler();
+        await AnimationsModule.settingsExitAnimation();
+        changeScreen(START_SCREEN);
+        removeListener(settingsBackBtn, backBtnHandlerHome);
+        removeListener(startGameBtn, startGameBtnHandlerHome);
+        addListener(startBtn, startBtnHandler);
+        settingsBackBtn.innerHTML = "";
+    };
+
+    // Handler for the start game button on the home settings screen
+    const startGameBtnHandlerHome = async () => {
+        getSettings();;
+        GameControls.setRoundWinner(null);
+        GameControls.setLastRoundWinner(null);
+        removeListener(startGameBtn, startGameBtnHandlerHome);
+        removeListener(settingsBackBtn, backBtnHandlerHome);
+        addListener(backBtn, backBtnHandler);
+        addListener(settingsBtn, settingsBtnHandler);
+        handleGame();
+        await AnimationsModule.gameStartAnimation();
+        changeScreen(GAME_SCREEN);
+        settingsBackBtn.innerHTML = "";
+    };
+
+    // Handler for the back button on the game settings screen
+    const backBtnHandlerGame = async () => {
+        await AnimationsModule.gameBackAnimation();
+        changeScreen(GAME_SCREEN);
+        removeListener(settingsBackBtn, backBtnHandlerGame);
+        removeListener(startGameBtn, startGameBtnHandlerGame);
+        addListener(backBtn, backBtnHandler);
+        addListener(settingsBtn, settingsBtnHandler);  
+    };
+
+    // Handler for the exit button on the game screen
+    const backBtnHandler = () => {
+        InputsControl.resetInputsHandler();
+        removeListener(backBtn, backBtnHandler);
+        removeListener(settingsBtn, settingsBtnHandler);
+        addListener(startBtn, startBtnHandler);
+        exitBtnHandler();
+    };
+
+    // Handler for the start game button on the game settings screen
+    const startGameBtnHandlerGame = () => {
+        GameControls.setRoundWinner(null);
+        GameControls.setLastRoundWinner(null);
+        removeListener(settingsBackBtn, backBtnHandlerGame);
+        removeListener(startGameBtn, startGameBtnHandlerGame);
+        GameControls.getPlayer1().resetScore();
+        GameControls.getPlayer2().resetScore();
+        getSettings();
+        restartBtnHandler();
+    };
+
+    // Handler for the settings button on the game screen
+    const settingsBtnHandler = async () => {
+        settingsBackBtn.innerHTML = "Back";
+        await AnimationsModule.gameSettingsAnimation();
+        changeScreen(SETTINGS_SCREEN);
+        removeListener(backBtn, backBtnHandler);
+        removeListener(settingsBtn, settingsBtnHandler);
+        addListener(startGameBtn, startGameBtnHandlerGame);
+        addListener(settingsBackBtn, backBtnHandlerGame);
+    };
+
+    // Handler for the restart button on the end screen
+    const restartBtnHandler = async () => {
+        clearCellListeners();
+        addListener(backBtn, backBtnHandler);
+        addListener(settingsBtn, settingsBtnHandler);
+        clearBoard();
+        GameControls.resetGame();
+        handleGame();
+        if (END_SCREEN.classList.contains("display-on")) {
+            await AnimationsModule.endRestartAnimation();
+        } else {
+            await AnimationsModule.gameStartAnimation();
+        };
+        changeScreen(GAME_SCREEN);
+    };
+
+    // Handler for the exit button on the end screen
+    const exitBtnHandler = async () => {
+        InputsControl.resetInputsHandler();
+        if (END_SCREEN.classList.contains("display-on")) {
+            removeListener(restartBtn, restartBtnHandler);
+            removeListener(exitBtn, exitBtnHandler);
+            await AnimationsModule.endExitAnimation();
+        } else {
+            await AnimationsModule.gameExitAnimation();
+        };
+
+        clearCellListeners();
+        clearBoard();
+        GameControls.resetGame();
+        GameControls.resetPlayersScore();
+
+        addListener(startBtn, startBtnHandler);
+        changeScreen(START_SCREEN);
+    };
+
+
+    // Add event listener to an element
+    const addListener = (element, handler, event = "click") => {
+        element.addEventListener(event, handler);
+    };
+
+    // Remove event listener from an element
+    const removeListener = (element, handler, event = "click") => {
+        element.removeEventListener(event, handler);
+    };
+
+    // Clear event listeners from all cells
+    const clearCellListeners = () => {
+        const cells = document.querySelectorAll('.cell');
+        cells.forEach(cell => {
+            cell.removeEventListener('click', cellHandler);
+        });
+    };
+
+
+    // Change the active screen
     const changeScreen = (screen) => {
         START_SCREEN.classList.add("display-off");
         START_SCREEN.classList.remove("display-on");
@@ -405,176 +778,87 @@ const DOMControls = (() => {
         screen.classList.add("display-on");
     };
 
-    const getTopCell = (column) => {
-        let tempRows = document.querySelectorAll(`[data-cell-col="${column}"]`);
-        let tempCell = null;
-    
-        for (let i = 0; i < tempRows.length; i++) {
-            if (tempRows[i].dataset.cellOwner !== "null") {
-                tempCell = tempRows[i];
-                break;
-            };
+    // Clear the game board
+    const clearBoard = () => {
+        while (board.firstChild) {
+            board.removeChild(board.firstChild);
         };
-
-        return tempCell;
     };
 
-    const addListener = (element, handler, event = "click") => {
-        element.addEventListener(event, handler);
-    };
-
-    const removeListener = (element, handler, event = "click") => {
-        element.removeEventListener(event, handler);
-    };
-
-    const clearCellListeners = () => {
-        const cells = document.querySelectorAll('.cell');
-        cells.forEach(cell => {
-            cell.removeEventListener('click', cellHandler);
-        });
-    };
-
+    // Get the game settings from the input fields
     const getSettings = () => {
         let rows = parseInt(rowsInput.value);
         let columns = parseInt(columnsInput.value);
         let player1Name = player1NameInput.value;
+        let player1Bot = player1BotInput.checked;
         let player2Name = player2NameInput.value;
+        let player2Bot = player2BotInput.checked;
 
-        if (rows < 4 || rows > 9 || isNaN(rows)) {
-            rows = 6;
-        };
-        if (columns < 4 || columns > 9 || isNaN(columns)) {
-            columns = 7;
-        };
-        if (player1Name === "") {
-            player1Name = "Player 1";
-        };
-        if (player2Name === "") {
-            player2Name = "Player 2";
+        if (player1Bot === true && player2Bot === true) {
+            return;
         };
 
-        GameControls.getPlayer1().setName(player1Name);
-        GameControls.getPlayer2().setName(player2Name);
-        return [rows, columns];
-    };
-
-    const startBtnHandler = async () => {
-        removeListener(startBtn, startBtnHandler);
-        settingsBackBtn.innerHTML = "Exit";
-        rowsInput.value = 6;
-        columnsInput.value = 7;
-        player1NameInput.value = "Player 1";
-        player2NameInput.value = "Player 2";
-        await startScreenTransitionAnimation();
-        addListener(startGameBtn, startGameBtnHandlerHome);
-        addListener(settingsBackBtn, backBtnHandlerHome);
-        changeScreen(SETTINGS_SCREEN);
-    };
-
-    const backBtnHandlerHome = async () => {
-        await settingsExitAnimation();
-        changeScreen(START_SCREEN);
-        removeListener(settingsBackBtn, backBtnHandlerHome);
-        removeListener(startGameBtn, startGameBtnHandlerHome);
-        addListener(startBtn, startBtnHandler);
-        settingsBackBtn.innerHTML = "";
-    };
-
-    const startGameBtnHandlerHome = async () => {
-        GameControls.setRoundWinner(null);
-        GameControls.setLastRoundWinner(null);
-        removeListener(startGameBtn, startGameBtnHandlerHome);
-        removeListener(settingsBackBtn, backBtnHandlerHome);
-        addListener(backBtn, backBtnHandler);
-        addListener(settingsBtn, settingsBtnHandler);
-        getSettings();
-        handleGame();
-        await gameStartAnimation();
-        changeScreen(GAME_SCREEN);
-        settingsBackBtn.innerHTML = "";
-    };
-
-    const backBtnHandlerGame = async () => {
-        await gameBackAnimation();
-        changeScreen(GAME_SCREEN);
-        removeListener(settingsBackBtn, backBtnHandlerGame);
-        removeListener(startGameBtn, startGameBtnHandlerGame);
-        addListener(backBtn, backBtnHandler);
-        addListener(settingsBtn, settingsBtnHandler);  
-    };
-
-    const backBtnHandler = () => {
-        removeListener(backBtn, backBtnHandler);
-        removeListener(settingsBtn, settingsBtnHandler);
-        addListener(startBtn, startBtnHandler);
-        exitBtnHandler();
-    };
-
-    const startGameBtnHandlerGame = () => {
-        GameControls.setRoundWinner(null);
-        GameControls.setLastRoundWinner(null);
-        removeListener(settingsBackBtn, backBtnHandlerGame);
-        removeListener(startGameBtn, startGameBtnHandlerGame);
-        GameControls.getPlayer1().resetScore();
-        GameControls.getPlayer2().resetScore();
-        getSettings();
-        restartBtnHandler();
-    };
-
-    const settingsBtnHandler = async () => {
-        settingsBackBtn.innerHTML = "Back";
-        await gameSettingsAnimation();
-        changeScreen(SETTINGS_SCREEN);
-        removeListener(backBtn, backBtnHandler);
-        removeListener(settingsBtn, settingsBtnHandler);
-        addListener(startGameBtn, startGameBtnHandlerGame);
-        addListener(settingsBackBtn, backBtnHandlerGame);
-    };
-
-    const restartBtnHandler = async () => {
-        clearCellListeners();
-        addListener(backBtn, backBtnHandler);
-        addListener(settingsBtn, settingsBtnHandler);
-        clearBoard();
-        GameControls.resetGame();
-        handleGame();
-        if (END_SCREEN.classList.contains("display-on")) {
-            await endRestartAnimation();
-        } else {
-            await gameStartAnimation();
-        };
-        changeScreen(GAME_SCREEN);
-    };
-
-    const exitBtnHandler = async () => {
-        if (END_SCREEN.classList.contains("display-on")) {
-            removeListener(restartBtn, restartBtnHandler);
-            removeListener(exitBtn, exitBtnHandler);
-            await endExitAnimation();
-        } else {
-            await gameExitAnimation();
+        if (player1Bot === true) {
+            player1Name = "Bot";
+            if (player2Name === "") {
+                player2Name = "Player 2";
+            };
+            
+            GameControls.getPlayer1().setName(player1Name);
+            GameControls.getPlayer2().setName(player2Name);
+            GameControls.getPlayer1().setIsBot(true);
+            GameControls.getPlayer2().setIsBot(false)
+            return [rows, columns];
         };
 
-        clearCellListeners();
-        clearBoard();
-        GameControls.resetGame();
-        GameControls.resetPlayersScore();
+        if (player2Bot === true) {
+            player2Name = "Bot";
+            if (player1Name === "") {
+                player1Name = "Player 1";
+            };
+            
+            GameControls.getPlayer1().setName(player1Name);
+            GameControls.getPlayer2().setName(player2Name);
+            GameControls.getPlayer1().setIsBot(false);
+            GameControls.getPlayer2().setIsBot(true)
+            return [rows, columns];
+        };
 
-        addListener(startBtn, startBtnHandler);
-        changeScreen(START_SCREEN);
+        if (player1Bot === false && player2Bot === false) {
+
+            if (player1Name === "") {
+                player1Name = "Player 1";
+            };
+            if (player2Name === "") {
+                player2Name = "Player 2";
+            };
+
+            GameControls.getPlayer1().setName(player1Name);
+            GameControls.getPlayer2().setName(player2Name);
+            GameControls.getPlayer1().setIsBot(false);
+            GameControls.getPlayer2().setIsBot(false)
+
+            return [rows, columns];
+        };
     };
 
+    // Function to handle the game logic
     const handleGame = () => {
         renderBoard();
         renderGamePlayer();
     };
 
+    // Handler for the cell click event
     const cellHandler = async (e) => {
+        let difficulty = getBotDifficulty();
         let cell = e.target;
         let column = parseInt(cell.dataset.cellCol)
-
-        if (GameControls.checkIfValidMove(column) === false) return;
-        BoardControls.insertToken(column, GameControls.getCurrentPlayer());
+        if (GameControls.getCurrentPlayer().getIsBot() === false && GameControls.checkIfValidMove(column) === true) {
+            BoardControls.insertToken(column, GameControls.getCurrentPlayer());
+        } else if (GameControls.getCurrentPlayer().getIsBot() === true) {
+            column = BotLogic.getBotChoice(difficulty);
+            BoardControls.insertToken(column, GameControls.getCurrentPlayer());
+        } else {return};
 
         if (GameControls.checkIfWin()) {
             gameEndHandler("win");
@@ -584,10 +868,11 @@ const DOMControls = (() => {
         };
 
         renderBoard();
-;       insertTokenAnimation(cell);
+        await AnimationsModule.insertTokenAnimation(column);
         GameControls.switchPlayer();
     };
 
+    // Handler for the game end event
     const gameEndHandler = (state) => {
         if (state === "win") {
             endMessage.textContent = `${GameControls.getCurrentPlayer().getName()} wins!`;
@@ -602,22 +887,11 @@ const DOMControls = (() => {
         renderEndPlayer();
     };
 
-    const renderGamePlayer = () => {
-        player1NameOutput.textContent = GameControls.getPlayer1().getName();
-        player2NameOutput.textContent = GameControls.getPlayer2().getName();
-        player1ScoreOutput.textContent = GameControls.getPlayer1().getScore();
-        player2ScoreOutput.textContent = GameControls.getPlayer2().getScore();
-    };
 
-    const renderEndPlayer = () => {
-        player1EndName.textContent = GameControls.getPlayer1().getName();
-        player2EndName.textContent = GameControls.getPlayer2().getName();
-        player1EndScore.textContent = GameControls.getPlayer1().getScore();
-        player2EndScore.textContent = GameControls.getPlayer2().getScore();
-    };
-
+    // Function to render the game board
     const renderBoard = () => {
         clearBoard();
+        let sheet = document.styleSheets[0];
         let tempArr = getSettings();
         GameControls.initGame(tempArr[0], tempArr[1]);
         const boardArr = GameControls.getGameBoard().board;
@@ -642,8 +916,13 @@ const DOMControls = (() => {
 
                 if (boardArr[i][j].getCellOwner() === GameControls.getPlayer1().getName()) {
                     cell.classList.add('cell-player1');
+                    sheet.insertRule(`.cell-player1 { background-color: ${player1ColorInput.value}; }`, 0);
+
                 } else if (boardArr[i][j].getCellOwner() === GameControls.getPlayer2().getName()) {
                     cell.classList.add('cell-player2');
+                    sheet.insertRule(`.cell-player2 { background-color: ${player2ColorInput.value}; }`, 0);
+                } else {
+                    cell.classList.add('cell-empty');
                 };
 
                 if (boardArr[i][j].getIsCellWinning()) {
@@ -678,12 +957,64 @@ const DOMControls = (() => {
                     cell.classList.add('cell-top');
                 };;
 
-                cell.addEventListener('click', cellHandler);
-                row.appendChild(cell);
+                if (GameControls.getCurrentPlayer().getIsBot() === false) {
+                    cell.addEventListener('click', cellHandler);
+                    row.appendChild(cell);
+                } else {
+                    cell.addEventListener('click', cellHandler);
+                    row.appendChild(cell);
+                };
             };
         };
     };
 
+    // Function to render the game player information
+    const renderGamePlayer = () => {
+        player1NameOutput.textContent = GameControls.getPlayer1().getName();
+        player2NameOutput.textContent = GameControls.getPlayer2().getName();
+        player1ScoreOutput.textContent = GameControls.getPlayer1().getScore();
+        player2ScoreOutput.textContent = GameControls.getPlayer2().getScore();
+    };
+
+    // Function to render the end player information
+    const renderEndPlayer = () => {
+        player1EndName.textContent = GameControls.getPlayer1().getName();
+        player2EndName.textContent = GameControls.getPlayer2().getName();
+        player1EndScore.textContent = GameControls.getPlayer1().getScore();
+        player2EndScore.textContent = GameControls.getPlayer2().getScore();
+    };
+
+
+    const getBotDifficulty = () => {
+        let difficulty;
+        if (player1BotInput.checked === true) {
+            difficulty = player1BotDiffInput.value;
+        } else if (player2BotInput.checked === true) {
+            difficulty = player2BotDiffInput.value;
+        };
+        return difficulty;
+    };
+
+
+    // Initialization function
+    const init = () => {
+        addListener(startBtn, startBtnHandler);
+    };
+
+    
+    return { init };
+})();
+
+// Define Bot logic module
+const AnimationsModule = (() => {
+    // Define constants for different screens
+    const START_SCREEN = document.querySelector('#start-screen');
+    const SETTINGS_SCREEN = document.querySelector('#settings-screen');
+    const GAME_SCREEN = document.querySelector('#game-screen');
+    const END_SCREEN = document.querySelector('#end-screen');
+
+
+    // Function to start the screen transition animation
     const startScreenTransitionAnimation = async () => {
         START_SCREEN.classList.add("start-screen-start-animation");
         SETTINGS_SCREEN.classList.add("settings-screen-start-animation");
@@ -694,6 +1025,7 @@ const DOMControls = (() => {
         START_SCREEN.classList.remove("display-on");
     };
 
+    // Function to animate the exit of the settings screen
     const settingsExitAnimation = async () => {
         START_SCREEN.classList.remove("display-off");
         START_SCREEN.classList.add("display-on");
@@ -703,6 +1035,7 @@ const DOMControls = (() => {
         SETTINGS_SCREEN.classList.remove("display-on");
     };
 
+    // Function to animate the start of the game
     const gameStartAnimation = async () => {
         GAME_SCREEN.classList.remove("display-off");
         GAME_SCREEN.classList.add("display-on");
@@ -714,16 +1047,17 @@ const DOMControls = (() => {
         GAME_SCREEN.classList.remove("display-on");
     };
 
+    // Function to animate the exit of the game
     const gameExitAnimation = async () => {
         START_SCREEN.classList.remove("display-off");
         START_SCREEN.classList.add("display-on");
         GAME_SCREEN.classList.add("game-screen-game-exit-animation");
         await new Promise(r => setTimeout(r, 500));
         GAME_SCREEN.classList.remove("game-screen-game-exit-animation");
-
         GAME_SCREEN.classList.remove("display-on");
     };
 
+    // Function to animate the game settings
     const gameSettingsAnimation = async () => {
         SETTINGS_SCREEN.classList.remove("display-off");
         SETTINGS_SCREEN.classList.add("display-on");
@@ -735,6 +1069,7 @@ const DOMControls = (() => {
         GAME_SCREEN.classList.remove("display-on");
     };
 
+    // Function to animate the game back
     const gameBackAnimation = async () => {
         GAME_SCREEN.classList.remove("display-off");
         GAME_SCREEN.classList.add("display-on");
@@ -744,11 +1079,12 @@ const DOMControls = (() => {
         SETTINGS_SCREEN.classList.remove("display-on");
         SETTINGS_SCREEN.classList.remove("settings-screen-game-back-animation");
         GAME_SCREEN.classList.remove("game-screen-game-back-animation");
-      
     };
-    
+
+    // Function for the game start decorative animation
     const gameStartDecorativeAnimation = async () => {};
 
+    // Function for the end restart animation
     const endRestartAnimation = async () => {
         GAME_SCREEN.classList.remove("display-off");
         GAME_SCREEN.classList.add("display-on");
@@ -760,6 +1096,7 @@ const DOMControls = (() => {
         GAME_SCREEN.classList.remove("display-on");
     };
 
+    // Function for the end exit animation
     const endExitAnimation = async () => {
         START_SCREEN.classList.remove("display-off");
         START_SCREEN.classList.add("display-on");
@@ -771,9 +1108,9 @@ const DOMControls = (() => {
         END_SCREEN.classList.remove("display-on");
     };
 
-    const insertTokenAnimation = async (token) => {
-        let tempCol = parseInt(token.dataset.cellCol);
-        let topCell = getTopCell(tempCol);
+    // Function to animate the insertion of a token
+    const insertTokenAnimation = async (column) => {
+        let topCell = getTopCell(column);
         let rowOfTopCell = parseInt(topCell.dataset.cellRow);
         switch (rowOfTopCell) {
             case 0:
@@ -824,6 +1161,7 @@ const DOMControls = (() => {
         };
     };
 
+    // Function to animate the platform filled state
     const platformFilledAnimation = async () => {
         const board = GameControls.getGameBoard().board;
         for (let i = 0; i < GameControls.getGameBoard().rows; i++) {
@@ -886,20 +1224,189 @@ const DOMControls = (() => {
         };
     };
 
+    // Function for the winning cells animation
     const winningCellsAnimation = async () => {};
 
+    // Function for the draw cells animation
     const drawCellsAnimation = async () => {};
 
+    // Function for the win animation
     const winAnimation = async () => {};
 
+    // Function for the draw animation
     const drawAnimation = async () => {};
 
-    const init = () => {
-        addListener(startBtn, startBtnHandler);
+    // Get the top claimed cell in a column
+    const getTopCell = (column) => {
+        let tempRows = document.querySelectorAll(`[data-cell-col="${column}"]`);
+        let tempCell = null;
+        for (let i = 0; i < tempRows.length; i++) {
+            if (tempRows[i].dataset.cellOwner !== "false") {
+                tempCell = tempRows[i];
+                break;
+            };
+        };
+
+        return tempCell;
     };
 
-    return { init };
+    return { startScreenTransitionAnimation, settingsExitAnimation, gameStartAnimation, gameExitAnimation, gameSettingsAnimation, gameBackAnimation, gameStartDecorativeAnimation, endRestartAnimation, endExitAnimation, insertTokenAnimation, platformFilledAnimation, winningCellsAnimation, drawCellsAnimation, winAnimation, drawAnimation };
 
 })();
 
+// Define the board module
+const InputsControl = (() => {
+    const player1NameInput = document.querySelector('#player1');
+    const player1ColorInput = document.querySelector('#player1-color');
+    const player1BotInput = document.querySelector('#player1-bot');
+    const player1BotDiffInput = document.querySelector('#player1-bot-diff');
+    const player1BotDiffLabel = document.querySelector('#bot-diff-1');
+    const player2NameInput = document.querySelector('#player2');
+    const player2ColorInput = document.querySelector('#player2-color');
+    const player2BotInput = document.querySelector('#player2-bot');
+    const player2BotDiffInput = document.querySelector('#player2-bot-diff');
+    const player2BotDiffLabel = document.querySelector('#bot-diff-2');
+    const rowsInput = document.querySelector('#rows');
+    const columnsInput = document.querySelector('#columns');
+
+    const namesInputHandler = () => {
+        const hebEnReg = /^[a-z0-9\u0590-\u05fe\s]*$/i;;
+        player1NameInput.addEventListener('click', () => {
+            player1NameInput.value = "";
+        });
+        player2NameInput.addEventListener('click', () => {
+            player2NameInput.value = "";
+        });
+        player1NameInput.addEventListener('input', () => {
+            if (player1NameInput.value.length > 10) {
+                player1NameInput.value = player1NameInput.value.slice(0, 10);
+            };
+            if (!hebEnReg.test(player1NameInput.value)) {
+                alert("Please enter a valid name");
+            };
+            if (player1NameInput.value === "null" || player1NameInput.value === "Bot" || player1NameInput.value === "undefined") {
+                alert("Invalid name")
+            }
+        });
+        player2NameInput.addEventListener('input', () => {
+            if (player2NameInput.value.length > 10) {
+                player2NameInput.value = player2NameInput.value.slice(0, 10);
+            };
+            if (!hebEnReg.test(player2NameInput.value)) {
+                alert("Please enter a valid name");
+            };
+            if (player2NameInput.value === "null" || player2NameInput.value === "Bot" || player2NameInput.value === "undefined") {
+                alert("Invalid name")
+            }
+        });
+    };
+
+    const botCheckboxHandler = () => {
+        player1BotInput.addEventListener('change', () => {
+            if (player1BotInput.checked === true) {
+                player1NameInput.value = "Bot";
+                player1NameInput.disabled = true;
+                player1BotDiffInput.disabled = false;
+                player2BotDiffInput.disabled = true;
+                player2BotInput.checked = false;
+                player2NameInput.disabled = false;
+                player2BotDiffLabel.classList.add('disabled-diff');
+                player1BotDiffLabel.classList.remove('disabled-diff');
+                player2BotDiffInput.value = 1;
+                player1NameInput.classList.add("disabled-name");
+                player2NameInput.classList.remove("disabled-name");
+                if (player2NameInput.value === "Bot") {
+                    player2NameInput.value = "Player 2";
+                };
+            } else {
+                player1NameInput.value = "";
+                player1NameInput.disabled = false;
+                player1BotDiffInput.disabled = true;
+                player1BotDiffLabel.classList.add('disabled-diff');
+            };
+        });
+        player2BotInput.addEventListener('change', () => {
+            if (player2BotInput.checked === true) {
+                player2NameInput.value = "Bot";
+                player2NameInput.disabled = true;
+                player2BotDiffInput.disabled = false;
+                player1BotDiffInput.disabled = true;
+                player1BotInput.checked = false;
+                player1NameInput.disabled = false;
+                player1BotDiffLabel.classList.add('disabled-diff');
+                player2BotDiffLabel.classList.remove('disabled-diff');
+                player1BotDiffInput.value = 1;
+                player2NameInput.classList.add("disabled-name");
+                player1NameInput.classList.remove("disabled-name");
+                if (player1NameInput.value === "Bot") {
+                    player1NameInput.value = "Player 1";
+                };
+            } else {
+                player2NameInput.value = "";
+                player2NameInput.disabled = false;
+                player2BotDiffInput.disabled = true;
+                player2BotDiffLabel.classList.add('disabled-diff')
+            };
+        });
+    };
+
+    const rowsAndColumnsInputHandler = () => {
+        rowsInput.addEventListener('input', () => {
+            if (rowsInput.value > 10) {
+                rowsInput.value = 10;
+            };
+            if (rowsInput.value < 4) {
+                rowsInput.value = 4;
+            };
+        });
+        columnsInput.addEventListener('input', () => {
+            if (columnsInput.value > 10) {
+                columnsInput.value = 10;
+            };
+            if (columnsInput.value < 4) {
+                columnsInput.value = 4;
+            };
+        });
+    };
+
+    const removeInputsListeners = () => {
+        player1NameInput.removeEventListener('click', () => {});
+        player2NameInput.removeEventListener('click', () => {});
+        player1NameInput.removeEventListener('input', () => {});
+        player2NameInput.removeEventListener('input', () => {});
+        player1BotInput.removeEventListener('change', () => {});
+        player2BotInput.removeEventListener('change', () => {});
+    };
+
+    const resetInputsHandler = () => {
+        removeInputsListeners();
+        player1NameInput.value = "";
+        player1ColorInput.value = "#FF0000";
+        player1BotInput.checked = false;
+        player1BotDiffInput.value = 1;
+        player1BotDiffInput.disabled = true;
+        player1BotDiffLabel.classList.add('disabled-diff');
+        player1NameInput.classList.remove("disabled-name");
+
+        player2NameInput.value = "";
+        player2ColorInput.value = "#0000FF";
+        player2BotInput.checked = false;
+        player2BotDiffInput.value = 1;
+        player2BotDiffInput.disabled = true;
+        rowsInput.value = 6;
+        columnsInput.value = 7;
+        player2BotDiffLabel.classList.add('disabled-diff');
+        player2NameInput.classList.remove("disabled-name");
+    };
+
+    const init = () => {
+        namesInputHandler();
+        botCheckboxHandler();
+        rowsAndColumnsInputHandler();
+    };
+
+    return { init, resetInputsHandler };
+})();
+
+// Initialize the DOM controls
 DOMControls.init();

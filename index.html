@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>4 in a row</title>
+    <title>ארבע בשורה יא ראב</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="main-wrap">
         <div class="heading">
-            <h1>4 in a row</h1>
-            <p>חן הגבר</p>
+            <h1>ארבע בזה</h1>
         </div>
         <div class="content">
             <div class="game-wrap">
@@ -25,13 +24,41 @@
                     <div class="settings screen-content">
                         <div class="settings-div">
                             <div class="setting-row">
-                                <label for="player1">Player 1</label>
+                                <label for="player1">Player 1:</label>
                                 <input type="text" id="player1" value="Player 1" maxlength="12" placeholder="Player 1">
+                                <label for="player1-bot">Bot?</label>
+                                <input type="checkbox" id="player1-bot">
+                            </div>   
+                            <div class="setting-row">
+                                <label for="player1-color">Color: </label>
+                                <input type="color" id="player1-color" value="#ff0000">
+                                <label class="disabled-diff" id="bot-diff-1" for="player1-bot-diff">Bot difficulty</label>
+                                <select id="player1-bot-diff" disabled>
+                                    <option value="1">Easy</option>
+                                    <option value="2">Medium</option>
+                                    <option value="3">Hard</option>
+                                    <option value="4" disabled>Impossible</option>
+                                </select>
+                            </div>
+                            <div id="setting-div-1"></div>
+                            <div class="setting-row">
+                                <label for="player2">Player 2: </label>
+                                <input type="text" id="player2" value="Player 2" maxlength="12" placeholder="Player 2">
+                                <label for="player2-bot">Bot?</label>
+                                <input type="checkbox" id="player2-bot">
                             </div>
                             <div class="setting-row">
-                                <label for="player2">Player 2</label>
-                                <input type="text" id="player2" value="Player 2" maxlength="12" placeholder="Player 2">
+                                <label for="player2-color">Color: </label>
+                                <input type="color" id="player2-color" value="#ff0000">
+                                <label id="bot-diff-2" class="disabled-diff" for="player2-bot-diff">Bot difficulty</label>
+                                <select id="player2-bot-diff" disabled>
+                                    <option value="1">Easy</option>
+                                    <option value="2">Medium</option>
+                                    <option value="3">Hard</option>
+                                    <option value="4" disabled>Impossible</option>
+                                </select>
                             </div>
+                            <div id="setting-div-2"></div>
                             <div class="setting-row">
                                 <label for="rows">Rows</label>
                                 <input type="number" pattern="[0-9]*" inputmode="numeric" id="rows" value="6" max="9" min="4">
@@ -55,7 +82,7 @@
                             <div class="player player1">
                                 <span id="player1-name"></span> - <span id="player1-score"></span>
                             </div>
-                            <span id="seprator">|</span>
+                            <span id="seperator">|</span>
                             <div class="player player2">
                                 <span id="player2-score"></span> - <span id="player2-name"></span>
                             </div>
