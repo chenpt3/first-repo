@@ -1,165 +1,361 @@
-let ROWS;
-let COLUMNS;
-const EMPTY_TOKEN = "empty";
-
-const Player = (name, token) => {
+const Player = (name) => {
     let score = 0;
+    let active = false;
 
     const setName = (newName) => name = newName;
-    const setToken = (newToken) => token = newToken;
     const getName = () => name;
-    const getToken = () => token;
     const getScore = () => score;
     const incrementScore = () => score++;
     const resetScore = () => score = 0;
+    const setActive = (newActive) => active = newActive;
+    const getActive = () => active;
 
-    return { setName, setToken, getName, getToken, getScore, incrementScore, resetScore };
+    return { setName, getName, getScore, incrementScore, resetScore, setActive, getActive};
 }; 
 
-const Board = (() => {
-    let board = [];
+const BoardControls = (() => {
+    let gameBoard = {
+        board: [],
+        rows: null,
+        columns: null
+    };
 
-    const Cell = () => {
-        let token = EMPTY_TOKEN;
+    const Cell = () => { // Define Cell object
         let cellNum = null;
+        let cellOwner = null;
         let cellClaimed = false;
-        let fullRow = false;
+        let cellRow = null;
+        let cellCol = null;
+        let isRowFull = false;
+        let isColFull = false;
+        let isTopLeftDiagFull = false;
+        let isTopRightDiagFull = false;
+        let isCellWinning = false;
+        let isBoardFull = false;
 
-        const setToken = (newToken) => token = newToken;
-        const getToken = () => token;
         const setCellNum = (newCellNum) => cellNum = newCellNum;
         const getCellNum = () => cellNum;
-        const setCellClaimed = (newCellClaimed) => cellClaimed = newCellClaimed;
+        const setCellOwner = (newCellOwner) => cellOwner = newCellOwner;
+        const getCellOwner = () => cellOwner;
+        const setCellRow = (newCellRow) => cellRow = newCellRow;
+        const getCellRow = () => cellRow;
+        const setCellCol = (newCellCol) => cellCol = newCellCol;
+        const getCellCol = () => cellCol;
+        const setIsRowFull = (newIsRowFull) => isRowFull = newIsRowFull;
+        const getIsRowFull = () => isRowFull;
+        const setIsColFull = (newIsColFull) => isColFull = newIsColFull;
+        const getIsColFull = () => isColFull;
+        const setIsTopLeftDiagFull = (newIsTopLeftDiagFull) => isTopLeftDiagFull = newIsTopLeftDiagFull;
+        const getIsTopLeftDiagFull = () => isTopLeftDiagFull;
+        const setIsTopRightDiagFull = (newIsTopRightDiagFull) => isTopRightDiagFull = newIsTopRightDiagFull;
+        const getIsTopRightDiagFull = () => isTopRightDiagFull;
+        const setIsCellWinning = (newIsCellWinning) => isCellWinning = newIsCellWinning;
+        const getIsCellWinning = () => isCellWinning;
+        const setIsBoardFull = (newIsBoardFull) => isBoardFull = newIsBoardFull;
+        const getIsBoardFull = () => isBoardFull;
         const getCellClaimed = () => cellClaimed;
-        const getFullRow = () => fullRow;
-        const setFullRow = (newFullRow) => fullRow = newFullRow;
+        const setCellClaimed = (newSetCellClaimed) => newSetCellClaimed = cellClaimed; 
 
-
-        return { setToken, getToken, setCellNum, getCellNum, setCellClaimed, getCellClaimed, getFullRow, setFullRow};
+        return { setCellNum, getCellNum, setCellOwner, getCellOwner, setCellRow, getCellRow, setCellCol, getCellCol, setIsRowFull, getIsRowFull, setIsColFull, getIsColFull, setIsTopLeftDiagFull, getIsTopLeftDiagFull, setIsTopRightDiagFull, getIsTopRightDiagFull, setIsCellWinning, getIsCellWinning, setIsBoardFull, getIsBoardFull, getCellClaimed, setCellClaimed };
     };
 
-    const initBoard = () => { 
+    const initBoard = (rows = 6, columns = 7) => { // Initialize the game board, returns a game board object
         let count = 0;
-        for (let i = 0; i < ROWS; i++) {
-            board.push([]);
-            for (let j = 0; j < COLUMNS; j++) {
+        gameBoard.rows = rows;
+        gameBoard.columns = columns;
+        for (let i = 0; i < rows; i++) {
+            let row = [];
+            for (let j = 0; j < columns; j++) {
                 let cell = Cell();
                 cell.setCellNum(count);
-                board[i].push(cell);
+                cell.setCellRow(i);
+                cell.setCellCol(j);
+                row.push(cell);
                 count++;
             };
+            gameBoard.board.push(row);
         };
     };
 
-    const getBoard = () => board;
+    const getBoard = () => gameBoard;
 
-    const resetBoard = () => board = [];
+    const resetBoard = () => gameBoard = {
+        board: [],
+        rows: null,
+        columns: null
+    };
 
-    const insertToken = (column, token) => {
-        let row = ROWS - 1;
+    const checkIfRowIsFull = (row) => {
+        for (let i = 0; i < gameBoard.columns; i++) {
+            if (gameBoard.board[row][i].getCellOwner() === null) {
+                return false;
+            };
+        };
+        for (let i = 0; i < gameBoard.columns; i++) {
+            gameBoard.board[row][i].setIsRowFull(true);
+        };
+        return true;
+    };
+
+    const checkIfColIsFull = (col) => {
+        for (let i = 0; i < gameBoard.rows; i++) {
+            if (gameBoard.board[i][col].getCellOwner() === null) {
+                return false;
+            };
+        };
+        for (let i = 0; i < gameBoard.rows; i++) {
+            gameBoard.board[i][col].setIsColFull(true);
+        };
+        return true;
+    };
+
+    const checkIfTopLeftDiagIsFull = (row, col) => {
+        let i = row;
+        let j = col;
+        while (i >= 0 && j >= 0) {
+            if (gameBoard.board[i][j].getCellOwner() === null) {
+                return false;
+            };
+            i--;
+            j--;
+        };
+        i = row;
+        j = col;
+        while (i < gameBoard.rows && j < gameBoard.columns) {
+            gameBoard.board[i][j].setIsTopLeftDiagFull(true);
+            i++;
+            j++;
+        };
+        return true;
+    };
+
+    const checkIfTopRightDiagIsFull = (row, col) => {
+        let i = row;
+        let j = col;
+        while (i >= 0 && j < gameBoard.columns) {
+            if (gameBoard.board[i][j].getCellOwner() === null) {
+                return false;
+            };
+            i--;
+            j++;
+            console.log(i, j)
+        };
+        i = row;
+        j = col;
+        while (i < gameBoard.rows && j >= 0) {
+            gameBoard.board[i][j].setIsTopRightDiagFull(true);
+            i++;
+            j--;
+        };
+        return true;
+    };
+
+    const insertToken = (column, player) => {
+        let rows = gameBoard.rows;
+        let row = rows - 1;
         while (row >= 0) {
-            if (board[row][column].getToken() === EMPTY_TOKEN) {
-                board[row][column].setToken(token);
-                break;
-            }
+            if (gameBoard.board[row][column].getCellOwner() === null) {
+                gameBoard.board[row][column].setCellOwner(player.getName());
+                gameBoard.board[row][column].setCellClaimed(true);
+                checkIfRowIsFull(row);
+                checkIfColIsFull(column);
+                checkIfTopLeftDiagIsFull(row, column);
+                checkIfTopRightDiagIsFull(row, column);
+                return;
+            };
             row--;
         };
-    };
+    }
 
     return { initBoard, getBoard, resetBoard, insertToken };
 })();
 
 const GameControls = (() => {
-    let player1 = Player("Player 1", "X");
-    let player2 = Player("Player 2", "O");
-    let winningCells = [];
+    let player1 = Player("Player 1");
+    let player2 = Player("Player 2");
     let currentPlayer = player1;
+    let roundWinner = null;
+    let gameWinner = null;
+    let lastRoundWinner = null;
 
-    const getCurrentPlayer = () => currentPlayer;
+    const isEmpty = () => {
+        for (let i = 0; i < getGameBoard().rows; i++) {
+            for (let j = 0; j < getGameBoard().columns; j++) {
+                if (getGameBoard().board[i][j].getCellOwner() !== null) {
+                    return false;
+                };
+            };
+        };
+        return true;
+    };
 
-    const switchPlayer = () => {
-        currentPlayer = currentPlayer === player1 ? player2 : player1;
+    const gameSettings = (rows = null, cols = null) => { 
+        if (player1.getActive() === false && player2.getActive() === false) {
+            player1.setActive(true);
+            player2.setActive(false);
+            currentPlayer = player1;
+        };
+        if (player1.getScore() === 0 && player2.getScore() === 0 && isEmpty()) {
+            player1.setActive(true);
+            player2.setActive(false);
+            currentPlayer = player1;
+        };
+        roundWinner = null;
+        gameWinner = null;
+        gameDraw = false;
+    };
+
+    const initGame = (rows, cols) => {
+        BoardControls.initBoard(rows, cols);
+        gameSettings();
+    };
+
+    const resetGame = () => {
+        BoardControls.resetBoard();
+        gameSettings();
     };
 
     const checkIfValidMove = (column) => {
-        const board = Board.getBoard();
-        if (column < 0 || column >= COLUMNS) return false;
-        if (board[0][column].getToken() !== EMPTY_TOKEN) return false;
+        if (column < 0 || column >= getGameBoard().board.columns || getGameBoard().board[0][column].getCellOwner() !== null) {
+            return false;
+        };
         return true;
     };
 
     const checkIfWin = () => {
-        const board = Board.getBoard();
-        for (let i = 0; i < ROWS; i++) {
-            for (let j = 0; j < COLUMNS; j++) {
-                if (board[i][j].getToken() === EMPTY_TOKEN) continue;
-                if (j + 3 < COLUMNS &&
-                    board[i][j].getToken() === board[i][j + 1].getToken() &&
-                    board[i][j].getToken() === board[i][j + 2].getToken() &&
-                    board[i][j].getToken() === board[i][j + 3].getToken()) {
-                    winningCells = [board[i][j], board[i][j + 1], board[i][j + 2], board[i][j + 3]];
+        if (checkIfRowWin() || checkIfColWin() || checkIfDiagWin()) {
+            roundWinner = currentPlayer.getName();
+            currentPlayer.incrementScore();
+            return true;
+        };
+        return false;
+    };
+
+    const checkIfRowWin = () => {
+        const board = getGameBoard().board;
+        for (let i = 0; i < getGameBoard().rows; i++) {
+            for (let j = 0; j < getGameBoard().columns - 3; j++) {
+                if (board[i][j].getCellOwner() === currentPlayer.getName() && board[i][j + 1].getCellOwner() === currentPlayer.getName() && board[i][j + 2].getCellOwner() === currentPlayer.getName() && board[i][j + 3].getCellOwner() === currentPlayer.getName()) {
+                    board[i][j].setIsCellWinning(true);
+                    board[i][j + 1].setIsCellWinning(true); 
+                    board[i][j + 2].setIsCellWinning(true);
+                    board[i][j + 3].setIsCellWinning(true);
                     return true;
-                }
-                if (i + 3 < ROWS) {
-                    if (board[i][j].getToken() === board[i + 1][j].getToken() &&
-                        board[i][j].getToken() === board[i + 2][j].getToken() &&
-                        board[i][j].getToken() === board[i + 3][j].getToken()) {
-                        winningCells = [board[i][j], board[i + 1][j], board[i + 2][j], board[i + 3][j]];
-                        return true;
-                    }
-                    if (j + 3 < COLUMNS &&
-                        board[i][j].getToken() === board[i + 1][j + 1].getToken() &&
-                        board[i][j].getToken() === board[i + 2][j + 2].getToken() &&
-                        board[i][j].getToken() === board[i + 3][j + 3].getToken()) {
-                        winningCells = [board[i][j], board[i + 1][j + 1], board[i + 2][j + 2], board[i + 3][j + 3]];
-                        return true;
-                    }
-                    if (j - 3 >= 0 &&
-                        board[i][j].getToken() === board[i + 1][j - 1].getToken() &&
-                        board[i][j].getToken() === board[i + 2][j - 2].getToken() &&
-                        board[i][j].getToken() === board[i + 3][j - 3].getToken()) {
-                        winningCells = [board[i][j], board[i + 1][j - 1], board[i + 2][j - 2], board[i + 3][j - 3]];
-                        return true;
-                    }
+                };
+            };
+        }
+        return false;
+    };
+
+    const checkIfColWin = () => {
+        const board = getGameBoard().board;
+        for (let i = 0; i < getGameBoard().rows - 3; i++) {
+            for (let j = 0; j < getGameBoard().columns; j++) {
+                if (board[i][j].getCellOwner() === getCurrentPlayer().getName() && board[i + 1][j].getCellOwner() === getCurrentPlayer().getName() && board[i + 2][j].getCellOwner() === getCurrentPlayer().getName() && board[i + 3][j].getCellOwner() === getCurrentPlayer().getName()) {
+                    board[i][j].setIsCellWinning(true);
+                    board[i + 1][j].setIsCellWinning(true);
+                    board[i + 2][j].setIsCellWinning(true);
+                    board[i + 3][j].setIsCellWinning(true);
+                    return true;
                 }
             }
         }
         return false;
-    }
+    };
 
-    const checkIfDraw = () => {
-        const board = Board.getBoard();
-        for (let i = 0; i < ROWS; i++) {
-            for (let j = 0; j < COLUMNS; j++) {
-                if (board[i][j].getToken() === EMPTY_TOKEN) return false;
+    const checkIfDiagWin = () => {
+        if (checkIfTopLeftDiagWin() || checkIfTopRightDiagWin()) {
+            return true;
+        }
+        return false;
+    };
+
+    const checkIfTopLeftDiagWin = () => {
+        const board = getGameBoard().board;
+        for (let i = 0; i < getGameBoard().rows - 3; i++) {
+            for (let j = 0; j < getGameBoard().columns - 3; j++) {
+                if (board[i][j].getCellOwner() === getCurrentPlayer().getName() && board[i + 1][j + 1].getCellOwner() === getCurrentPlayer().getName() && board[i + 2][j + 2].getCellOwner() === getCurrentPlayer().getName() && board[i + 3][j + 3].getCellOwner() === getCurrentPlayer().getName()) {
+                    board[i][j].setIsCellWinning(true);
+                    board[i + 1][j + 1].setIsCellWinning(true);
+                    board[i + 2][j + 2].setIsCellWinning(true);
+                    board[i + 3][j + 3].setIsCellWinning(true);
+                    return true;
+                }
             }
         }
+        return false;
+    };
+
+    const checkIfTopRightDiagWin = () => {
+        const board = getGameBoard().board;
+        for (let i = 0; i < getGameBoard().rows - 3; i++) {
+            for (let j = 3; j < getGameBoard().columns; j++) {
+                if (board[i][j].getCellOwner() === getCurrentPlayer().getName() && board[i + 1][j - 1].getCellOwner() === getCurrentPlayer().getName() && board[i + 2][j - 2].getCellOwner() === getCurrentPlayer().getName() && board[i + 3][j - 3].getCellOwner() === getCurrentPlayer().getName()) {
+                    board[i][j].setIsCellWinning(true);
+                    board[i + 1][j - 1].setIsCellWinning(true);
+                    board[i + 2][j - 2].setIsCellWinning(true);
+                    board[i + 3][j - 3].setIsCellWinning(true);
+                    return true;
+                }
+            }
+        }
+        return false;
+    };
+
+    const checkIfDraw = () => {
+        const board = getGameBoard().board;
+        for (let i = 0; i < getGameBoard().rows; i++) {
+            for (let j = 0; j < getGameBoard().columns; j++) {
+                if (board[i][j].getCellOwner() === null) {
+                    return false;
+                };
+            };
+        };
+        roundWinner = null;
         return true;
     };
 
-    const initGame = () => {
-        Board.initBoard();
-    };
-
-    const resetGame = () => {
-        Board.resetBoard();
-        currentPlayer = player1;
-        winningCells = [];
-    };
-
-    const getRoundWinner = () => {
-        if (checkIfWin()) {
-            currentPlayer.incrementScore();
-            return currentPlayer;
+    const switchPlayer = () => {
+        if (player1.getActive()) {
+            player1.setActive(false);
+            player2.setActive(true);
+            currentPlayer = player2;
+        } else if (player2.getActive()){
+            player1.setActive(true);
+            player2.setActive(false);
+            currentPlayer = player1;
+        } else {
+            player1.setActive(true);
+            player2.setActive(false);
+            currentPlayer = player1;
         }
-        return null;
+    }
+
+    const resetPlayersScore = () => {
+        player1.resetScore();
+        player2.resetScore();
     };
 
-    const getPlayersScore = () => {
-        return [player1.getScore(), player2.getScore()];
-    };
+    const getLastRoundWinner = () => lastRoundWinner;
+    const setLastRoundWinner = (newLastRoundWinner) => lastRoundWinner = newLastRoundWinner;
 
-    return { getRoundWinner, getPlayersScore, initGame, resetGame, getCurrentPlayer, switchPlayer, checkIfValidMove, checkIfWin, checkIfDraw, player1, player2, winningCells};
+    const getGameBoard = () => BoardControls.getBoard();
+    const setRoundWinner = (newRoundWinner) => roundWinner = newRoundWinner;
+    const getRoundWinner = () => roundWinner;
+    const getGameWinner = () => gameWinner;
+    const getCurrentPlayer = () => {
+        if (player1.getActive()) {
+            return player1;
+        } else if (player2.getActive()) {
+            return player2;
+        } else {
+            return player1;
+        }
+    }
+    const getPlayer1 = () => player1;
+    const getPlayer2 = () => player2;
+
+    return { initGame, resetGame, checkIfValidMove, checkIfWin, checkIfDraw, switchPlayer, getRoundWinner, getGameWinner, getCurrentPlayer, getPlayer1, getPlayer2, getGameBoard, resetPlayersScore, setRoundWinner, getLastRoundWinner, setLastRoundWinner };
 })();
 
 const DOMControls = (() => {
@@ -167,7 +363,6 @@ const DOMControls = (() => {
     const SETTINGS_SCREEN = document.querySelector('#settings-screen');
     const GAME_SCREEN = document.querySelector('#game-screen');
     const END_SCREEN = document.querySelector('#end-screen');
-
     const startBtn = document.querySelector('#start-btn');
     const player1NameInput = document.querySelector('#player1');
     const player2NameInput = document.querySelector('#player2');
@@ -211,17 +406,17 @@ const DOMControls = (() => {
     };
 
     const getTopCell = (column) => {
-        const boardArr = Board.getBoard();
-        for (let i = 0; i < ROWS; i++) {
-            for (let j = 0; j < COLUMNS; j++) {
-                if (j === column && boardArr[i][j].getToken() !== EMPTY_TOKEN) {
-                    let cellNum = boardArr[i][j].getCellNum();
-                    let cell = getCellDiv(cellNum);
-                    return cell;
-                };         
+        let tempRows = document.querySelectorAll(`[data-cell-col="${column}"]`);
+        let tempCell = null;
+    
+        for (let i = 0; i < tempRows.length; i++) {
+            if (tempRows[i].dataset.cellOwner !== "null") {
+                tempCell = tempRows[i];
+                break;
             };
         };
-        return null;
+
+        return tempCell;
     };
 
     const addListener = (element, handler, event = "click") => {
@@ -258,10 +453,9 @@ const DOMControls = (() => {
             player2Name = "Player 2";
         };
 
-        ROWS = rows;
-        COLUMNS = columns;
-        GameControls.player1.setName(player1Name);
-        GameControls.player2.setName(player2Name);
+        GameControls.getPlayer1().setName(player1Name);
+        GameControls.getPlayer2().setName(player2Name);
+        return [rows, columns];
     };
 
     const startBtnHandler = async () => {
@@ -287,6 +481,8 @@ const DOMControls = (() => {
     };
 
     const startGameBtnHandlerHome = async () => {
+        GameControls.setRoundWinner(null);
+        GameControls.setLastRoundWinner(null);
         removeListener(startGameBtn, startGameBtnHandlerHome);
         removeListener(settingsBackBtn, backBtnHandlerHome);
         addListener(backBtn, backBtnHandler);
@@ -304,7 +500,7 @@ const DOMControls = (() => {
         removeListener(settingsBackBtn, backBtnHandlerGame);
         removeListener(startGameBtn, startGameBtnHandlerGame);
         addListener(backBtn, backBtnHandler);
-        addListener(settingsBtn, settingsBtnHandler);   
+        addListener(settingsBtn, settingsBtnHandler);  
     };
 
     const backBtnHandler = () => {
@@ -314,11 +510,13 @@ const DOMControls = (() => {
         exitBtnHandler();
     };
 
-    const startGameBtnHandlerGame = async () => {
+    const startGameBtnHandlerGame = () => {
+        GameControls.setRoundWinner(null);
+        GameControls.setLastRoundWinner(null);
         removeListener(settingsBackBtn, backBtnHandlerGame);
         removeListener(startGameBtn, startGameBtnHandlerGame);
-        GameControls.player1.resetScore();
-        GameControls.player2.resetScore();
+        GameControls.getPlayer1().resetScore();
+        GameControls.getPlayer2().resetScore();
         getSettings();
         restartBtnHandler();
     };
@@ -356,46 +554,43 @@ const DOMControls = (() => {
         } else {
             await gameExitAnimation();
         };
+
         clearCellListeners();
-        changeScreen(START_SCREEN);
-        addListener(startBtn, startBtnHandler);
         clearBoard();
         GameControls.resetGame();
-        GameControls.player1.resetScore();
-        GameControls.player2.resetScore();
+        GameControls.resetPlayersScore();
+
+        addListener(startBtn, startBtnHandler);
+        changeScreen(START_SCREEN);
     };
 
     const handleGame = () => {
-        GameControls.initGame();
         renderBoard();
         renderGamePlayer();
     };
 
     const cellHandler = async (e) => {
         let cell = e.target;
-        let cellClaimed = cell.dataset.cellClaimed;
-        let cellNum = parseInt(cell.dataset.cellNum);
-        let column = (cellNum % COLUMNS);
+        let column = parseInt(cell.dataset.cellCol)
 
-        if (GameControls.checkIfValidMove(column) === false || cellClaimed === "true") return;
-        Board.insertToken(column, GameControls.getCurrentPlayer().getToken());
+        if (GameControls.checkIfValidMove(column) === false) return;
+        BoardControls.insertToken(column, GameControls.getCurrentPlayer());
 
         if (GameControls.checkIfWin()) {
             gameEndHandler("win");
-        };
-        if (GameControls.checkIfDraw()) {
+            GameControls.switchPlayer()
+        } else if (GameControls.checkIfDraw()) {
             gameEndHandler("draw");
         };
-        GameControls.switchPlayer();
-        checkFullRow();
+
         renderBoard();
-        await insertTokenAnimation(cell);
+;       insertTokenAnimation(cell);
+        GameControls.switchPlayer();
     };
 
     const gameEndHandler = (state) => {
         if (state === "win") {
-            let winner = GameControls.getRoundWinner();
-            endMessage.textContent = `${winner.getName()} wins!`;
+            endMessage.textContent = `${GameControls.getCurrentPlayer().getName()} wins!`;
         } else if (state === "draw") {
             endMessage.textContent = "It's a draw!";
         };
@@ -408,65 +603,81 @@ const DOMControls = (() => {
     };
 
     const renderGamePlayer = () => {
-        player1NameOutput.textContent = GameControls.player1.getName();
-        player2NameOutput.textContent = GameControls.player2.getName();
-        player1ScoreOutput.textContent = GameControls.player1.getScore();
-        player2ScoreOutput.textContent = GameControls.player2.getScore();
+        player1NameOutput.textContent = GameControls.getPlayer1().getName();
+        player2NameOutput.textContent = GameControls.getPlayer2().getName();
+        player1ScoreOutput.textContent = GameControls.getPlayer1().getScore();
+        player2ScoreOutput.textContent = GameControls.getPlayer2().getScore();
     };
 
     const renderEndPlayer = () => {
-        player1EndName.textContent = GameControls.player1.getName();
-        player2EndName.textContent = GameControls.player2.getName();
-        player1EndScore.textContent = GameControls.player1.getScore();
-        player2EndScore.textContent = GameControls.player2.getScore();
+        player1EndName.textContent = GameControls.getPlayer1().getName();
+        player2EndName.textContent = GameControls.getPlayer2().getName();
+        player1EndScore.textContent = GameControls.getPlayer1().getScore();
+        player2EndScore.textContent = GameControls.getPlayer2().getScore();
     };
 
-    const setFullRow = async (column) => {
-        const boardArr = Board.getBoard();
-        for (i = 0; i < ROWS; i++) {
-            for (j = 0; j < COLUMNS; j++) {
-                if (j === column) {
-                    boardArr[i][j].dataset.fullRow = "true";
-                };
-            };
-        };
-    };
-
-    const checkFullRow = async () => {
-        const boardArr = Board.getBoard();
-        for (i = 0; i < COLUMNS; i++) {
-            if (boardArr[0][i].getToken() !== EMPTY_TOKEN && boardArr[0][i].getFullRow() === false) {
-                setFullRow(i);
-            };
-        };
-    };
-    const renderBoard = async () => {
+    const renderBoard = () => {
         clearBoard();
-        const boardArr = Board.getBoard();
-        for (let i = 0; i < ROWS; i++) {
+        let tempArr = getSettings();
+        GameControls.initGame(tempArr[0], tempArr[1]);
+        const boardArr = GameControls.getGameBoard().board;
+        for (let i = 0; i < GameControls.getGameBoard().rows; i++) {
             let row = document.createElement('div');
             row.classList.add('cell-row');
             board.appendChild(row);
-            for (let j = 0; j < COLUMNS; j++) {
+            for (let j = 0; j < GameControls.getGameBoard().columns; j++) {
                 let cell = document.createElement('div');
                 cell.classList.add('cell');
-                cell.dataset.cellNum = boardArr[i][j].getCellNum();
+                cell.dataset.cellNum = GameControls.getGameBoard().board[i][j].getCellNum();
+                cell.dataset.cellRow = GameControls.getGameBoard().board[i][j].getCellRow();
+                cell.dataset.cellCol = boardArr[i][j].getCellCol();
+                cell.dataset.cellOwner = boardArr[i][j].getCellOwner();
                 cell.dataset.cellClaimed = boardArr[i][j].getCellClaimed();
-                cell.dataset.token = boardArr[i][j].getToken();
-                cell.dataset.fullRow = boardArr[i][j].getFullRow();
-                if (cell.dataset.fullRow === "true") {
-                    cell.classList.add('full-row');
-                };
-                if (cell.dataset.token === GameControls.player1.getToken()) {
+                cell.dataset.isRowFull = boardArr[i][j].getIsRowFull();
+                cell.dataset.isColFull = boardArr[i][j].getIsColFull();
+                cell.dataset.isTopLeftDiagFull = boardArr[i][j].getIsTopLeftDiagFull();
+                cell.dataset.isTopRightDiagFull = boardArr[i][j].getIsTopRightDiagFull();
+                cell.dataset.isCellWinning = boardArr[i][j].getIsCellWinning();
+                cell.dataset.isBoardFull = boardArr[i][j].getIsBoardFull();
+
+                if (boardArr[i][j].getCellOwner() === GameControls.getPlayer1().getName()) {
                     cell.classList.add('cell-player1');
-                } else if (cell.dataset.token === GameControls.player2.getToken()) {
+                } else if (boardArr[i][j].getCellOwner() === GameControls.getPlayer2().getName()) {
                     cell.classList.add('cell-player2');
-                } else {
-                    cell.classList.add('cell-empty');
+                };
+
+                if (boardArr[i][j].getIsCellWinning()) {
+                    cell.classList.add('winning-cell');
+                } else if (boardArr[i][j].getIsBoardFull()) {
+                    cell.classList.add('board-full');
+                };
+
+                if (cell.dataset.isRowFull === "true") {
+                    cell.classList.add('row-full');
+                };
+                if (cell.dataset.isColFull === "true") {
+                    cell.classList.add('col-full');
+                };
+                if (cell.dataset.isTopLeftDiagFull === "true") {
+                    cell.classList.add('top-left-diag-full');
+                };
+                if (cell.dataset.isTopRightDiagFull === true) {
+                    cell.classList.add('top-right-diag-full');
+                };
+
+                if (j === 0) {
+                    cell.classList.add('cell-left');
+                };
+                if (j === GameControls.getGameBoard.columns - 1) {
+                    cell.classList.add('cell-right');
+                };
+                if (i === GameControls.getGameBoard.rows - 1) {
+                    cell.classList.add('cell-bottom');
                 };
                 if (i === 0) {
                     cell.classList.add('cell-top');
                 };;
+
                 cell.addEventListener('click', cellHandler);
                 row.appendChild(cell);
             };
@@ -560,15 +771,10 @@ const DOMControls = (() => {
         END_SCREEN.classList.remove("display-on");
     };
 
-    const getCellDiv = (cellIndex) => {
-        let cells = Array.from(document.querySelectorAll('.cell'));
-        return cells[cellIndex];
-    };
-
     const insertTokenAnimation = async (token) => {
-        let tempCol = parseInt(token.dataset.cellNum) % COLUMNS;
+        let tempCol = parseInt(token.dataset.cellCol);
         let topCell = getTopCell(tempCol);
-        let rowOfTopCell = parseInt(parseInt(topCell.dataset.cellNum) / COLUMNS);
+        let rowOfTopCell = parseInt(topCell.dataset.cellRow);
         switch (rowOfTopCell) {
             case 0:
                 topCell.classList.add('insert-token-row-0');
@@ -600,7 +806,7 @@ const DOMControls = (() => {
                 await new Promise(r => setTimeout(r, 500));
                 topCell.classList.remove('insert-token-row-5');
                 break;
-            case 6:
+            case 6: 
                 topCell.classList.add('insert-token-row-6');
                 await new Promise(r => setTimeout(r, 500));
                 topCell.classList.remove('insert-token-row-6');
@@ -618,16 +824,66 @@ const DOMControls = (() => {
         };
     };
 
-    const fillingColumnAnimation = async (cell) => {
-        let columnNum = parseInt(cell.dataset.cellNum) % COLUMNS;
-        let column = document.querySelectorAll(`[data-cell-num="${columnNum}"]`);
-        column.forEach(cell => {
-            cell.classList.add('filling-column');
-        });
-        await new Promise(r => setTimeout(r, 500));
-        column.forEach(cell => {
-            cell.classList.remove('filling-column');
-        });
+    const platformFilledAnimation = async () => {
+        const board = GameControls.getGameBoard().board;
+        for (let i = 0; i < GameControls.getGameBoard().rows; i++) {
+            for (let j = 0; j < GameControls.getGameBoard().columns; j++) {
+                if (board[i][j].getIsRowFull()) {
+                    let tempRow = document.querySelectorAll(`[data-cell-row="${i}"]`);
+                    tempRow.forEach(cell => {
+                        cell.classList.add('row-full-animation');
+                    });
+                    await new Promise(r => setTimeout(r, 500));
+                    tempRow.forEach(cell => {
+                        cell.classList.remove('row-full-animation');
+                    });
+                };
+                if (board[i][j].getIsColFull()) {
+                    let tempCol = document.querySelectorAll(`[data-cell-col="${j}"]`);
+                    tempCol.forEach(cell => {
+                        cell.classList.add('col-full-animation');
+                    });
+                    await new Promise(r => setTimeout(r, 500));
+                    tempCol.forEach(cell => {
+                        cell.classList.remove('col-full-animation');
+                    });
+                };
+                if (board[i][j].getIsTopLeftDiagFull()) {
+                    let tempTopLeftDiag = [];
+                    let tempI = i;
+                    let tempJ = j;
+                    while (tempI >= 0 && tempJ >= 0) {
+                        tempTopLeftDiag.push(document.querySelector(`[data-cell-row="${tempI}"][data-cell-col="${tempJ}"]`));
+                        tempI--;
+                        tempJ--;
+                    };
+                    tempTopLeftDiag.forEach(cell => {
+                        cell.classList.add('top-left-diag-full-animation');
+                    });
+                    await new Promise(r => setTimeout(r, 500));
+                    tempTopLeftDiag.forEach(cell => {
+                        cell.classList.remove('top-left-diag-full-animation');
+                    });
+                };
+                if (board[i][j].getIsTopRightDiagFull()) {
+                    let tempTopRightDiag = [];
+                    let tempI = i;
+                    let tempJ = j;
+                    while (tempI >= 0 && tempJ < GameControls.getGameBoard().columns) {
+                        tempTopRightDiag.push(document.querySelector(`[data-cell-row="${tempI}"][data-cell-col="${tempJ}"]`));
+                        tempI--;
+                        tempJ++;
+                    };
+                    tempTopRightDiag.forEach(cell => {
+                        cell.classList.add('top-right-diag-full-animation');
+                    });
+                    await new Promise(r => setTimeout(r, 500));
+                    tempTopRightDiag.forEach(cell => {
+                        cell.classList.remove('top-right-diag-full-animation');
+                    });
+                };
+            };
+        };
     };
 
     const winningCellsAnimation = async () => {};

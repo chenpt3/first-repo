@@ -428,39 +428,39 @@ button:active {
 }
 
 .insert-token-row-0 {
-    animation: insert-token-row-0 0.4s;
+    animation: insert-token-row-0 0.3s;
     position: relative;
 }
 
 @keyframes insert-token-row-0 {
     from {
-        transform: translateY(-600%);
+        transform: translateY(-100%);
     } to {
         transform: translateY(0);
     }
 }
 
 .insert-token-row-1 {
-    animation: insert-token-row-1 0.4s;
+    animation: insert-token-row-1 0.3s;
     position: relative;
 }
 
 @keyframes insert-token-row-1 {
     from {
-        transform: translateY(-600%);
+        transform: translateY(-200%);
     } to {
         transform: translateY(0);
     }
 }
 
 .insert-token-row-2 {
-    animation: insert-token-row-2 0.4s;
+    animation: insert-token-row-2 0.3s;
     position: relative;
 }
 
 @keyframes insert-token-row-2 {
     from {
-        transform: translateY(-600%);
+        transform: translateY(-300%);
     } to {
         transform: translateY(0);
     }
@@ -473,7 +473,7 @@ button:active {
 
 @keyframes insert-token-row-3 {
     from {
-        transform: translateY(-600%);
+        transform: translateY(-400%);
     } to {
         transform: translateY(0);
     }
@@ -486,7 +486,7 @@ button:active {
 
 @keyframes insert-token-row-4 {
     from {
-        transform: translateY(-600%);
+        transform: translateY(-500%);
     } to {
         transform: translateY(0);
     }
@@ -506,40 +506,40 @@ button:active {
 }
 
 .insert-token-row-6 {
-    animation: insert-token-row-6 0.4s;
+    animation: insert-token-row-6 0.5s;
     position: relative;
 }
 
 
 @keyframes insert-token-row-6 {
     from {
-        transform: translateY(-600%);
+        transform: translateY(-700%);
     } to {
         transform: translateY(0);
     }
 }
 
 .insert-token-row-7 {
-    animation: insert-token-row-7 0.4s;
+    animation: insert-token-row-7 0.5s;
     position: relative;
 }
 
 @keyframes insert-token-row-7 {
     from {
-        transform: translateY(-600%);
+        transform: translateY(-800%);
     } to {
         transform: translateY(0);
     }
 }
 
 .insert-token-row-8 {
-    animation: insert-token-row-8 0.4s;
+    animation: insert-token-row-8 0.5s;
     position: relative;
 }
 
 @keyframes insert-token-row-8 {
     from {
-        transform: translateY(-600%);
+        transform: translateY(-900%);
     } to {
         transform: translateY(0);
     }

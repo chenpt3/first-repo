@@ -1,0 +1,238 @@
+// Define global variables
+let ROWS = 6;
+let COLUMNS = 7;
+const EMPTY_TOKEN = "empty";
+ 
+// Define Player object
+const Player = (name, token, activeState) => {
+    let score = 0;
+    let active = activeState ? activeState : false; 
+    const setName = (newName) => name = newName;
+    const setToken = (newToken) => token = newToken;
+    const getName = () => name;
+    const getToken = () => token;
+    const getScore = () => score;
+    const incrementScore = () => score++;
+    const resetScore = () => score = 0;
+
+    return { setName, setToken, getName, getToken, getScore, incrementScore, resetScore, active };
+}; 
+
+// Define Board object
+const Board = (() => { 
+    let board = []; // Initialize the game board
+
+    // Define Cell object
+    const Cell = () => {
+        let token = EMPTY_TOKEN;
+        let claimedBy = EMPTY_TOKEN;
+        let cellNum = null;
+        let fullCol = false;
+        let fullRow = false;
+        let fullDiag = false
+        let winningCell = false;
+        let cellRow = null; 
+        let cellCol = null;
+
+        const setToken = (newToken) => token = newToken;
+        const getToken = () => token;
+        const setCellNum = (newCellNum) => cellNum = newCellNum;
+        const getCellNum = () => cellNum;
+        const getFullCol = () => fullCol;
+        const setFullCol = (newFullCol) => fullCol = newFullCol;
+        const getWinningCell = () => winningCell;
+        const setWinningCell = (newWinningCell) => winningCell = newWinningCell;
+        const getCellRow = () => cellRow;
+        const setCellRow = (newCellRow) => cellRow = newCellRow;
+        const getCellCol = () => cellCol;
+        const setCellCol = (newCellCol) => cellCol = newCellCol;
+        const setClaimedBy = (player) => claimedBy = player;
+        const getClaimedBy = () => claimedBy;
+        const getFullRow = () => fullRow;
+        const setFullRow = (newFullRow) => fullRow = newFullRow;
+        const setFullDiag = (newFullDiag) => fullDiag = newFullDiag;
+        const getFullDiag = () => fullDiag;
+
+        return { setToken, getToken, setCellNum, getCellNum, getFullCol, setFullCol, getWinningCell, setWinningCell, getCellRow, setCellRow, getCellCol, setCellCol, setClaimedBy, getClaimedBy, getFullRow, setFullRow, setFullDiag, getFullDiag}; 
+    };
+
+    // Initialize the game board
+    const initBoard = () => {
+        board = [];
+        let count = 0;
+        for (let i = 0; i < ROWS; i++) {
+            board.push([]);
+            for (let j = 0; j < COLUMNS; j++) {
+                let cell = Cell();
+                cell.setCellNum(count);
+                cell.setCellRow(i);
+                cell.setCellCol(j);
+                board[i].push(cell);
+                count++;
+            };
+        };
+        return board;
+    };
+
+    // Get the game board
+    const getBoard = () => board;
+
+    // Reset the game board
+    const resetBoard = () => board = [];
+
+    const checkWin = (cell) => {
+        let row = cell.getCellRow();
+        let col = cell.getCellCol();
+        let player = GameControls.getCurrentPlayer();
+        let playerToken = player.getToken();
+        let winningCells = [];
+        let winningCells2 = [];
+        let winningCells3 = [];
+        let winningCells4 = [];
+
+        // Check for horizontal win
+        for (let i = 0; i < 4; i++) {
+            if (col + i < COLUMNS) {
+                if (board[row][col + i].getToken() === playerToken) {
+                    winningCells.push(board[row][col + i]);
+                };
+            };
+        };
+        if (winningCells.length === 4) {
+            winningCells.forEach(cell => cell.setWinningCell(true));
+            return [true, winningCells];
+        };
+
+        // Check for vertical win
+        for (let i = 0; i < 4; i++) {
+            if (row + i < ROWS) {
+                if (board[row + i][col].getToken() === playerToken) {
+                    winningCells2.push(board[row + i][col]);
+                };
+            };
+        };
+        if (winningCells2.length === 4) {
+            winningCells2.forEach(cell => cell.setWinningCell(true));
+            return [true, winningCells2];
+        };
+
+        // Check for diagonal win
+        for (let i = 0; i < 4; i++) {
+            if (row + i < ROWS && col + i < COLUMNS) {
+                if (board[row + i][col + i].getToken() === playerToken) {
+                    winningCells3.push(board[row + i][col + i]);
+                };
+            };
+        };
+        if (winningCells3.length === 4) {
+            winningCells3.forEach(cell => cell.setWinningCell(true));
+            return [true, winningCells3];
+        };
+
+        // Check for diagonal win
+        for (let i = 0; i < 4; i++) {
+            if (row - i >= 0 && col + i < COLUMNS) {
+                if (board[row - i][col + i].getToken() === playerToken) {
+                    winningCells4.push(board[row - i][col + i]);
+                };
+            };
+        };
+        if (winningCells4.length === 4) {
+            winningCells4.forEach(cell => cell.setWinningCell(true));
+            return [true, winningCells4];
+        };
+
+        return false;
+    };
+
+    const checkDraw = () => {
+        let count = 0;
+        for (let i = 0; i < ROWS; i++) {
+            for (let j = 0; j < COLUMNS; j++) {
+                if (board[i][j].getToken() !== EMPTY_TOKEN) {
+                    count++;
+                };
+            };
+        };
+        if (count === ROWS * COLUMNS) {
+            return true;
+        };
+        return false;
+    };
+
+    const placeToken = (cell) => {
+        let player = GameControls.getCurrentPlayer();
+        let playerToken = player.getToken();
+        let col = cell.getCellCol();
+        let winningCell = cell.getWinningCell();
+        let claimedBy = cell.getClaimedBy();
+
+        if (winningCell || claimedBy !== EMPTY_TOKEN) {
+            return false;
+        };
+
+        for (let i = ROWS - 1; i >= 0; i--) {
+            if (board[i][col].getToken() === EMPTY_TOKEN) {
+                board[i][col].setToken(playerToken);
+                board[i][col].setClaimedBy(playerToken);
+                let win = checkWin(board[i][col]);
+                if (win) {
+                    player.incrementScore();
+                    return [true, player];
+                };
+                if (checkDraw()) {
+                    return [true, "draw"];
+                };
+                GameControls.switchPlayer();
+                return [true, player];
+            };
+        };
+    };
+
+    return { initBoard, getBoard, resetBoard, placeToken };
+})();
+
+const GameControls = (() => {
+    let players;
+
+    const setDefaultPlayers = () => { // Set the default players states
+        return players = [
+        Player("Player 1", "X", true),
+        Player("Player 2", "O", false)
+    ];
+    };
+
+    players = setDefaultPlayers();
+
+    const getCurrentPlayer = () => players.find(player => player.active); // Get the current player object
+
+    const switchPlayer = () => players[0].active = !players[0].active;
+
+    const resetGame = () => { // Restart the game
+        players[0].active = true;
+        players[1].active = false;
+        Board.resetBoard();
+    };
+
+    const initGame = () => { // Initialize the game state
+        Board.initBoard();
+    };
+
+    return { getCurrentPlayer, switchPlayer, setDefaultPlayers, resetGame, initGame, players };
+
+})();
+
+
+Board.initBoard();
+let x = Board.getBoard()[ROWS - 1][0];
+
+console.log(x.getToken());
+Board.placeToken(x);
+console.log(x.getToken());
+console.log(x.getClaimedBy());
+console.log(x.getWinningCell());
+console.log(x.getCellRow());
+console.log(x.getCellCol());
+console.log(Board.getBoard());
+console.log(GameControls.getCurrentPlayer());
+console.log(Board.placeToken(Board.getBoard()[ROWS - 2][0]));
