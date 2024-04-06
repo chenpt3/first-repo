@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ארבע בשורה יא ראב</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="board.css"
 </head>
 <body>
     <div class="main-wrap">
@@ -77,7 +78,10 @@
                 <div id="game-screen" class="display-off">
                     <h2 class="header">4 in a row</h2>
                     <div class="game screen-content">
-                        <div id="board" class="board"></div>
+                        <div id="game-message"></div>
+                        <div class="connect-4-border">
+                            <div id="board" class="board"></div>
+                        </div>
                         <div class="players">
                             <div class="player player1">
                                 <span id="player1-name"></span> - <span id="player1-score"></span>
@@ -90,6 +94,7 @@
                         <div class="controls">
                             <button id="back-btn">Exit</button>
                             <button id="settings-btn">Settings</button>
+                            <button id="continue-btn">Continue</button>
                         </div>
                     </div>
                 </div>
@@ -112,7 +117,6 @@
                             <button id="restart-btn">Restart</button>
                             <button id="exit-btn">Exit</button>
                         </div>
-
                     </div>
                 </div>
             </div>

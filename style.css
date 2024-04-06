@@ -143,11 +143,15 @@ label {
     margin-bottom: 10px;
 }
 
+.connect-4-border {
+    border: 2px solid #000;
+    display: inline-block;
+    padding: 10px;
+}
+
 .board {
     display: flex;;
     flex-direction: column;
-    justify-content: center;
-    align-items: center;
 }
 
 .cell-row {
@@ -155,14 +159,29 @@ label {
 }
 
 .cell {
-    border: 1px solid black;
-    height: 35px;
     width: 35px;
+    height: 35px;
+    border: 1px solid #000;
+    margin: 2px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.cell-empty:hover {
+    background-color: #f0f0f0;
+}
+
+.cell-empty:active {
+    background-color: #ccc;
 }
 
 .cell-empty {
     background-color: #f5f5f5;
 }
+
+.winning-cell {
+    box-shadow: 0 0 20px 5px #f9c92c;
+};
 
 .full-row {
     border: 1px solid rgb(148, 148, 148);
@@ -175,6 +194,10 @@ label {
 .filling-column {
     animation: filling-column 1s;
     position: relative;
+}
+
+#continue-btn {
+    display: none;
 }
 
 @keyframes filling-column {

@@ -93,15 +93,14 @@ const BotLogic = (() => {
         [["Player", false, "Player", "Player"], [-100]],
         [["Player", "Player", false, "Player"], [-100]],
         [["Player", "Player", "Player", false], [-100]],
-        [["Bot", "Bot", "Bot", "Bot"], [1000000]],
-        [["Player", "Player", "Player", "Player"], [-1000000]]
+        [["Bot", "Bot", "Bot", "Bot"], [1000000000]],
+        [["Player", "Player", "Player", "Player"], [-1000000000]]
     ];
     const evaluateBoard = (board) => {
         let tempBoard = getNewBoardCopy(board);
         const rows = tempBoard.length;
         const cols = tempBoard[0].length;
         let score = 0;
-        let x = 0;
         for (let i = 0; i < cols - 3; i++) {
             for (let j = rows - 1; j >= 0; j--) {
                 let window = [board[j][i], board[j][i + 1], board[j][i + 2], board[j][i + 3]];
@@ -111,7 +110,6 @@ const BotLogic = (() => {
                     } else if (j < rows - 1) {
                         if (board[j + 1][i] !== false && board[j + 1][i + 1] !== false && board[j + 1][i + 2] !== false && board[j + 1][i + 3] !== false) {
                             score += evaluateWindow(window);
-                            x++;
                         };
                     };
                 };
@@ -157,7 +155,7 @@ const BotLogic = (() => {
     };
     const minimax = (depth, maximizingPlayer, alpha, beta, board, player1Name, player2Name) => {
         let validColumns = getValidColumns(board);
-        let terminal = isTerminal(board, player1Name, player2Name);
+        let terminal = isTerminal(board, player1Name, player2Name);;
         if (depth === 0 || terminal) {
             if (terminal) {
                 if (checkIfWin(board, player1Name, player2Name) === 1) {
@@ -181,7 +179,7 @@ const BotLogic = (() => {
                     break;
                 };
             };
-            return value;
+            return value / depth ;
         } else {
             let value = Infinity;
             for (let i = 0; i < validColumns.length; i++) {
@@ -192,8 +190,35 @@ const BotLogic = (() => {
                     break;
                 };
             };
-            return value;
+            return value / depth;
         };
+    };
+    const impossibleChoice = () => {
+        let depth = 3;
+        let player1Name;
+        let player2Name;
+        if (GameControls.getCurrentPlayer().getName() === "Bot") {
+            player1Name = "Bot";
+            player2Name = "Player";
+        } else if (GameControls.getCurrentPlayer().getName() === "Player") {
+            player1Name = "Player";
+            player2Name = "Bot";
+        } else {
+            return;
+        };
+        let board = transformBoard(GameControls.getGameBoard().board);
+        let validColumns = getValidColumns(board);
+        let bestColumn = validColumns[0];
+        let bestValue = -Infinity;
+        for (let i = 0; i < validColumns.length; i++) {
+            let newBoard = insertToken(validColumns[i], player1Name, board);
+            let value = minimax(depth, false, -Infinity, Infinity, newBoard, player1Name, player2Name);
+            if (value > bestValue) {
+                bestValue = value;
+                bestColumn = validColumns[i];
+            };
+        };
+        return bestColumn;
     };
     const getValidColumns = (board) => {
         const cols = board[0].length;
@@ -244,7 +269,6 @@ const BotLogic = (() => {
     const isTerminal = (board, player1Name, player2Name) => {
         return checkIfWin(board, player1Name, player2Name) !== 0 || getValidColumns(board).length === 0;
     };
-
     const getEmptyColumns = () => {
         const boardObj = GameControls.getGameBoard();
         const board = boardObj.board;
@@ -389,33 +413,7 @@ const BotLogic = (() => {
     
         return null;
     };
-    const impossibleChoice = () => {
-        let depth = 4;
-        let player1Name;
-        let player2Name;
-        if (GameControls.getCurrentPlayer().getName() === "Bot") {
-            player1Name = "Bot";
-            player2Name = "Player";
-        } else if (GameControls.getCurrentPlayer().getName() === "Player") {
-            player1Name = "Player";
-            player2Name = "Bot";
-        } else {
-            return;
-        };
-        let board = transformBoard(GameControls.getGameBoard().board);
-        let validColumns = getValidColumns(board);
-        let bestColumn = validColumns[0];
-        let bestValue = -Infinity;
-        for (let i = 0; i < validColumns.length; i++) {
-            let newBoard = insertToken(validColumns[i], player1Name, board);
-            let value = minimax(depth, false, -Infinity, Infinity, newBoard, player1Name, player2Name);
-            if (value > bestValue) {
-                bestValue = value;
-                bestColumn = validColumns[i];
-            };
-        };
-        return bestColumn;
-    };
+
     return { getBotChoice };
 })();
 
@@ -598,7 +596,20 @@ const BoardControls = (() => {
         };
     };
 
-    return { initBoard, getBoard, resetBoard, insertToken };
+    // Function the get winning cells
+    const getWinningCells = () => {
+        let winningCells = [];
+        for (let i = 0; i < gameBoard.rows; i++) {
+            for (let j = 0; j < gameBoard.columns; j++) {
+                if (gameBoard.board[i][j].getIsCellWinning()) {
+                    winningCells.push(gameBoard.board[i][j]);
+                };
+            };
+        };
+        return winningCells;
+    }
+
+    return { initBoard, getBoard, resetBoard, insertToken, getWinningCells };
 })();
 
 // Define Game module
@@ -822,6 +833,7 @@ const DOMControls = (() => {
     const backBtn = document.querySelector('#back-btn');
     const settingsBackBtn = document.querySelector('#settings-back');
     const settingsBtn = document.querySelector('#settings-btn');
+    const continueBtn = document.querySelector('#continue-btn');
     const endMessage = document.querySelector('#end-message');
     const restartBtn = document.querySelector('#restart-btn');
     const exitBtn = document.querySelector('#exit-btn');
@@ -871,10 +883,11 @@ const DOMControls = (() => {
         removeListener(settingsBackBtn, backBtnHandlerHome);
         addListener(backBtn, backBtnHandler);
         addListener(settingsBtn, settingsBtnHandler);
+
         handleGame();
         await AnimationsModule.gameStartAnimation();
         changeScreen(GAME_SCREEN);
-        settingsBackBtn.innerHTML = "";
+        settingsBackBtn.innerHTML = "Back";
     };
 
     // Handler for the back button on the game settings screen
@@ -884,7 +897,7 @@ const DOMControls = (() => {
         removeListener(settingsBackBtn, backBtnHandlerGame);
         removeListener(startGameBtn, startGameBtnHandlerGame);
         addListener(backBtn, backBtnHandler);
-        addListener(settingsBtn, settingsBtnHandler);  
+        addListener(settingsBtn, settingsBtnHandler); 
     };
 
     // Handler for the exit button on the game screen
@@ -909,7 +922,6 @@ const DOMControls = (() => {
 
     // Handler for the settings button on the game screen
     const settingsBtnHandler = async () => {
-        settingsBackBtn.innerHTML = "Back";
         await AnimationsModule.gameSettingsAnimation();
         changeScreen(SETTINGS_SCREEN);
         removeListener(backBtn, backBtnHandler);
@@ -923,11 +935,9 @@ const DOMControls = (() => {
         GameControls.resetGame();
         GameControls.initGame(rowsInput.value, columnsInput.value);
         getSettings();
-        clearCellListeners();
         addListener(backBtn, backBtnHandler);
         addListener(settingsBtn, settingsBtnHandler);
         clearBoard();
-        
         handleGame();
         if (END_SCREEN.classList.contains("display-on")) {
             await AnimationsModule.endRestartAnimation();
@@ -948,7 +958,6 @@ const DOMControls = (() => {
             await AnimationsModule.gameExitAnimation();
         };
 
-        clearCellListeners();
         clearBoard();
         GameControls.resetGame();
         GameControls.resetPlayersScore();
@@ -969,10 +978,21 @@ const DOMControls = (() => {
 
     // Clear event listeners from all cells
     const clearCellListeners = () => {
-        const cells = document.querySelectorAll('.cell');
+        const cells = getAllCellDivs();
         cells.forEach(cell => {
+            cell.getEv
             cell.removeEventListener('click', cellHandler);
         });
+    };
+
+    const getAllCellDivs = () => {
+        let cells = [];
+        for (let i = 0; i < board.childNodes.length; i++) {
+            for (let j = 0; j < board.childNodes[i].childNodes.length; j++) {
+                cells.push(board.childNodes[i].childNodes[j]);
+            };
+        };
+        return cells;
     };
 
 
@@ -1084,21 +1104,47 @@ const DOMControls = (() => {
         await AnimationsModule.insertTokenAnimation(column);
     };
 
+    // Function to convert a cell object to it's relative cell div
+    const convertCellToDiv = (cell) => {
+        let cellDiv = document.querySelector(`[data-cell-num="${cell.getCellNum()}"]`);
+        return cellDiv;
+    };
+
     // Handler for the game end event
     const gameEndHandler = (state) => {
         if (state === "win") {
             endMessage.textContent = `${GameControls.getCurrentPlayer().getName()} wins!`;
+            let roundWinner = GameControls.getRoundWinner();
         } else if (state === "draw") {
             endMessage.textContent = "It's a draw!";
         };
-        changeScreen(END_SCREEN);
-        addListener(restartBtn, restartBtnHandler);
-        addListener(exitBtn, exitBtnHandler);
+        let winningCells = BoardControls.getWinningCells();
+        let winningCellDivs = [];
+        winningCells.forEach(cell => {
+            let cellDiv = convertCellToDiv(cell);
+            winningCellDivs.push(cellDiv);
+        });
+        winningCellDivs.forEach(cell => {
+            cell.classList.add('winning-cell');
+        });
         removeListener(backBtn, backBtnHandler);
         removeListener(settingsBtn, settingsBtnHandler);
-        renderEndPlayer();
+        continueBtn.style.display = "inline-block";
+        backBtn.style.display = "none";
+        settingsBtn.style.display = "none";
+        continueBtn.addEventListener('click', endScreenHandler);
+        clearCellListeners();
     };
 
+    const endScreenHandler = () => {
+        changeScreen(END_SCREEN);
+        addListener(restartBtn, restartBtnHandler);
+        renderEndPlayer();
+        continueBtn.style.display = "none";
+        backBtn.style.display = "inline-block";
+        settingsBtn.style.display = "inline-block";
+        continueBtn.removeEventListener('click', endScreenHandler);
+    };
 
     // Function to render the game board
     const renderBoard = () => {
@@ -1167,12 +1213,19 @@ const DOMControls = (() => {
                     cell.classList.add('cell-top');
                 };;
 
-                if (GameControls.getCurrentPlayer().getIsBot() === false) {
-                    cell.addEventListener('click', cellHandler);
+                let isGameOver = GameControls.getRoundWinner() !== null || GameControls.getGameWinner() !== null;
+
+                if (isGameOver) {
+                    cell.removeEventListener('click', cellHandler);
                     row.appendChild(cell);
                 } else {
-                    cell.addEventListener('click', cellHandler);
-                    row.appendChild(cell);
+                    if (GameControls.getCurrentPlayer().getIsBot() === false) {
+                        cell.addEventListener('click', cellHandler);
+                        row.appendChild(cell);
+                    } else {
+                        cell.addEventListener('click', cellHandler);
+                        row.appendChild(cell);
+                    };
                 };
             };
         };
@@ -1194,7 +1247,6 @@ const DOMControls = (() => {
         player2EndScore.textContent = GameControls.getPlayer2().getScore();
     };
 
-
     const getBotDifficulty = () => {
         let difficulty;
         if (player1BotInput.checked === true) {
@@ -1204,7 +1256,6 @@ const DOMControls = (() => {
         };
         return difficulty;
     };
-
 
     // Initialization function
     const init = () => {
